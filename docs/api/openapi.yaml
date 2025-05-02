@@ -1,0 +1,336 @@
+openapi: 3.0.0
+info:
+  title: This is Japan API
+  description: 日本の文化や体験を世界に発信するためのプラットフォームのAPI
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: 開発環境
+  - url: https://api.thisisjapan.example.com
+    description: 本番環境
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        is_japanese:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    Photo:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        image_url:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        likes:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    Word:
+      type: object
+      properties:
+        id:
+          type: integer
+        original:
+          type: string
+        translation:
+          type: string
+        description:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        likes:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    Experience:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        image_url:
+          type: string
+        location:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        likes:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+paths:
+  /api/auth/register:
+    post:
+      summary: ユーザー登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                is_japanese:
+                  type: boolean
+              required:
+                - username
+                - password
+                - is_japanese
+      responses:
+        "201":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/login:
+    post:
+      summary: ログイン
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+        "401":
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/logout:
+    post:
+      summary: ログアウト
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: ログアウト成功
+        "401":
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/photos:
+    get:
+      summary: 写真一覧取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [latest, popular]
+      responses:
+        "200":
+          description: 写真一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Photo"
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer
+    post:
+      summary: 写真投稿
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+              required:
+                - title
+                - image
+      responses:
+        "201":
+          description: 投稿成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+
+  /api/photos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 特定の写真取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 写真詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+    put:
+      summary: 写真更新
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+    delete:
+      summary: 写真削除
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: 削除成功
+
+  /api/photos/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 写真にいいね
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: いいね成功
+    delete:
+      summary: いいね取り消し
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: いいね取り消し成功
+# 以下、words, experiences, usersの各エンドポイントも同様のパターンで定義
+# 省略のため、主要なエンドポイントのみ記載
