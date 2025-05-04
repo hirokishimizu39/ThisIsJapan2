@@ -192,6 +192,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/auth/user:
+    get:
+      summary: 現在のユーザー情報取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/photos:
     get:
       summary: 写真一覧取得
@@ -260,6 +279,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/Photo"
 
+  /api/photos/top:
+    get:
+      summary: 人気の写真取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: 人気の写真一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Photo"
+
   /api/photos/{id}:
     parameters:
       - name: id
@@ -311,6 +351,142 @@ paths:
         "204":
           description: 削除成功
 
+  /api/photos/{id}/comments:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 写真のコメント一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: コメント一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    content:
+                      type: string
+                    user:
+                      $ref: "#/components/schemas/User"
+                    created_at:
+                      type: string
+                      format: date-time
+    post:
+      summary: 写真にコメント投稿
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required:
+                - content
+      responses:
+        "201":
+          description: コメント投稿成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  content:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+                  created_at:
+                    type: string
+                    format: date-time
+
+  /api/photos/{id}/tags:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 写真のタグ一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: タグ一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+    post:
+      summary: 写真にタグ追加
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag_id:
+                  type: integer
+              required:
+                - tag_id
+      responses:
+        "201":
+          description: タグ追加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+
+  /api/photos/{id}/tags/{tag_id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: tag_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      summary: 写真からタグ削除
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: タグ削除成功
+
   /api/photos/{id}/like:
     parameters:
       - name: id
@@ -332,5 +508,898 @@ paths:
       responses:
         "204":
           description: いいね取り消し成功
-# 以下、words, experiences, usersの各エンドポイントも同様のパターンで定義
-# 省略のため、主要なエンドポイントのみ記載
+
+  /api/words:
+    get:
+      summary: 言葉一覧取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [latest, popular]
+      responses:
+        "200":
+          description: 言葉一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Word"
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer
+    post:
+      summary: 言葉投稿
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                original:
+                  type: string
+                translation:
+                  type: string
+                description:
+                  type: string
+              required:
+                - original
+                - translation
+      responses:
+        "201":
+          description: 投稿成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Word"
+
+  /api/words/top:
+    get:
+      summary: 人気の言葉取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: 人気の言葉一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Word"
+
+  /api/words/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 特定の言葉取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 言葉詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Word"
+    put:
+      summary: 言葉更新
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                original:
+                  type: string
+                translation:
+                  type: string
+                description:
+                  type: string
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Word"
+    delete:
+      summary: 言葉削除
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: 削除成功
+
+  /api/words/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 言葉にいいね
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: いいね成功
+    delete:
+      summary: いいね取り消し
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: いいね取り消し成功
+
+  /api/words/{id}/comments:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 言葉のコメント一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: コメント一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    content:
+                      type: string
+                    user:
+                      $ref: "#/components/schemas/User"
+                    created_at:
+                      type: string
+                      format: date-time
+    post:
+      summary: 言葉にコメント投稿
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required:
+                - content
+      responses:
+        "201":
+          description: コメント投稿成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  content:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+                  created_at:
+                    type: string
+                    format: date-time
+
+  /api/words/{id}/tags:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 言葉のタグ一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: タグ一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+    post:
+      summary: 言葉にタグ追加
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag_id:
+                  type: integer
+              required:
+                - tag_id
+      responses:
+        "201":
+          description: タグ追加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+
+  /api/words/{id}/tags/{tag_id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: tag_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      summary: 言葉からタグ削除
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: タグ削除成功
+
+  /api/experiences:
+    get:
+      summary: 体験一覧取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [latest, popular]
+        - name: location
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 体験一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Experience"
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer
+    post:
+      summary: 体験投稿
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+                location:
+                  type: string
+              required:
+                - title
+                - location
+                - image
+      responses:
+        "201":
+          description: 投稿成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+
+  /api/experiences/top:
+    get:
+      summary: 人気の体験取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: 人気の体験一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Experience"
+
+  /api/experiences/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 特定の体験取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 体験詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+    put:
+      summary: 体験更新
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+                location:
+                  type: string
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+    delete:
+      summary: 体験削除
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: 削除成功
+
+  /api/experiences/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 体験にいいね
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: いいね成功
+    delete:
+      summary: いいね取り消し
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: いいね取り消し成功
+
+  /api/experiences/{id}/comments:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 体験のコメント一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: コメント一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    content:
+                      type: string
+                    user:
+                      $ref: "#/components/schemas/User"
+                    created_at:
+                      type: string
+                      format: date-time
+    post:
+      summary: 体験にコメント投稿
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required:
+                - content
+      responses:
+        "201":
+          description: コメント投稿成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  content:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+                  created_at:
+                    type: string
+                    format: date-time
+
+  /api/experiences/{id}/tags:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 体験のタグ一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: タグ一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+    post:
+      summary: 体験にタグ追加
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag_id:
+                  type: integer
+              required:
+                - tag_id
+      responses:
+        "201":
+          description: タグ追加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+
+  /api/experiences/{id}/tags/{tag_id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: tag_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      summary: 体験からタグ削除
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: タグ削除成功
+
+  /api/likes:
+    post:
+      summary: いいね追加
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content_type:
+                  type: string
+                  enum: [photo, word, experience]
+                object_id:
+                  type: integer
+              required:
+                - content_type
+                - object_id
+      responses:
+        "201":
+          description: いいね成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  content_type:
+                    type: string
+                  object_id:
+                    type: integer
+                  user:
+                    $ref: "#/components/schemas/User"
+
+  /api/likes/{content_type}/{object_id}:
+    delete:
+      summary: いいね削除
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: content_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [photo, word, experience]
+        - name: object_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: いいね削除成功
+
+  /api/comments/{comment_id}:
+    delete:
+      summary: コメント削除
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: コメント削除成功
+
+  /api/tags:
+    get:
+      summary: タグ一覧取得
+      responses:
+        "200":
+          description: タグ一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+
+  /api/notifications:
+    get:
+      summary: 通知一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 通知一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    type:
+                      type: string
+                    content:
+                      type: string
+                    is_read:
+                      type: boolean
+                    created_at:
+                      type: string
+                      format: date-time
+
+  /api/notifications/{id}/read:
+    put:
+      summary: 通知を既読に
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 既読設定成功
+
+  /api/notifications/{id}:
+    delete:
+      summary: 通知削除
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: 通知削除成功
+
+  /api/users/{id}:
+    get:
+      summary: ユーザー情報取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: プロフィール更新
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                profile_image:
+                  type: string
+                  format: binary
+                bio:
+                  type: string
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /api/users/{id}/photos:
+    get:
+      summary: ユーザーの写真一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザーの写真一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Photo"
+
+  /api/users/{id}/words:
+    get:
+      summary: ユーザーの言葉一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザーの言葉一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Word"
+
+  /api/users/{id}/experiences:
+    get:
+      summary: ユーザーの体験一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザーの体験一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Experience"
+
+  /api/users/{id}/likes:
+    get:
+      summary: ユーザーのいいね一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザーのいいね一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    content_type:
+                      type: string
+                    object_id:
+                      type: integer
+                    created_at:
+                      type: string
+                      format: date-time
