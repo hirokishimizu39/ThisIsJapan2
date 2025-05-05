@@ -73,6 +73,29 @@ dev/
 └── ThisIsJapan/
     ├── frontend/                  # Next.js 14 (App Router)
     │   ├── app/                   # フロントエンドのルーティング構造
+    │   │   ├── (auth)/           # 認証関連ルート
+    │   │   │   ├── login/        # ログインページ
+    │   │   │   └── register/     # ユーザー登録ページ
+    │   │   ├── dashboard/        # ダッシュボード
+    │   │   │   ├── photos/       # ユーザーの写真一覧
+    │   │   │   ├── words/        # ユーザーの言葉一覧
+    │   │   │   ├── experiences/  # ユーザーの体験一覧
+    │   │   │   ├── likes/        # ユーザーのいいね一覧
+    │   │   │   └── bookmarks/    # ユーザーのブックマーク一覧
+    │   │   ├── photos/           # 写真関連ページ
+    │   │   │   ├── [id]/         # 写真詳細ページ
+    │   │   │   └── new/          # 写真投稿ページ
+    │   │   ├── words/            # 言葉関連ページ
+    │   │   │   ├── [id]/         # 言葉詳細ページ
+    │   │   │   └── new/          # 言葉投稿ページ
+    │   │   ├── experiences/      # 体験関連ページ
+    │   │   │   ├── [id]/         # 体験詳細ページ
+    │   │   │   └── new/          # 体験投稿ページ
+    │   │   ├── tags/             # タグ一覧ページ
+    │   │   ├── notifications/    # 通知一覧ページ
+    │   │   ├── settings/         # ユーザー設定ページ
+    │   │   ├── layout.tsx        # アプリケーション全体のレイアウト
+    │   │   └── page.tsx          # ホームページ
     │   ├── components/            # UIコンポーネント
     │   ├── hooks/                 # カスタムフック
     │   ├── lib/                   # ライブラリ・APIクライアント
@@ -81,7 +104,31 @@ dev/
     │
     └── backend/                   # Django REST Framework
         ├── thisisjapan_api/       # Djangoプロジェクト
-        └── app/                   # Djangoアプリ
+        │   ├── settings/          # 設定ファイル
+        │   ├── urls.py           # メインURLルーティング
+        │   └── wsgi.py           # WSGIエントリーポイント
+        └── apps/                  # Djangoアプリケーション
+            ├── authentication/    # 認証関連のAPI
+            │   ├── urls.py        # 認証エンドポイントのURL設定
+            │   └── views.py       # 認証ビュー
+            ├── photos/            # 写真関連のAPI
+            │   ├── urls.py        # 写真エンドポイントのURL設定
+            │   └── views.py       # 写真ビュー
+            ├── words/             # 言葉関連のAPI
+            │   ├── urls.py        # 言葉エンドポイントのURL設定
+            │   └── views.py       # 言葉ビュー
+            ├── experiences/       # 体験関連のAPI
+            │   ├── urls.py        # 体験エンドポイントのURL設定
+            │   └── views.py       # 体験ビュー
+            ├── common/            # 共通機能（コメント、いいね、ブックマーク等）
+            │   ├── urls.py        # 共通エンドポイントのURL設定
+            │   └── views.py       # 共通ビュー
+            ├── users/             # ユーザー関連のAPI
+            │   ├── urls.py        # ユーザーエンドポイントのURL設定
+            │   └── views.py       # ユーザービュー
+            └── notifications/     # 通知関連のAPI
+                ├── urls.py        # 通知エンドポイントのURL設定
+                └── views.py       # 通知ビュー
 ```
 
 詳細なプロジェクト構成は[システム設計書](docs/architecture/system-architecture.md)を参照してください。
