@@ -274,3 +274,52 @@ POST /api/bookmarks
   "updated_at": "2023-06-01T15:10:22Z"
 }
 ```
+
+## OpenAPI 3.0 仕様
+
+API の詳細な仕様は、OpenAPI 3.0 フォーマットで`docs/api/openapi.yaml`に定義されています。このドキュメントには以下の情報が含まれています：
+
+- API 全体の基本情報（タイトル、説明、バージョン）
+- 利用可能なサーバー環境の定義
+- 認証方式（JWT Bearer 認証）
+- データモデルのスキーマ定義
+- 全 API エンドポイントの詳細（パス、メソッド、パラメータ、リクエスト/レスポンス形式）
+
+### Swagger UI による閲覧
+
+Django REST Framework の設定により、API ドキュメントは以下の URL で閲覧できます：
+
+- 開発環境: `http://localhost:8000/api/docs/`
+- 本番環境: `https://api.thisisjapan.example.com/api/docs/`
+
+### OpenAPI 仕様の活用方法
+
+OpenAPI 仕様は以下のような用途に活用できます：
+
+1. **API 仕様の視覚的な確認**：Swagger UI で各エンドポイントの詳細を確認
+2. **クライアントコードの自動生成**：OpenAPI Generator 等のツールを使用
+3. **テストの自動化**：Postman などのツールでコレクションをインポート
+4. **API 仕様の文書化**：開発者間での仕様共有
+
+### Generic Foreign Key の実装
+
+コメント、いいね、ブックマーク機能は、Django ContentType フレームワークを使用した Generic Foreign Key で実装されています。これにより、異なる種類のコンテンツ（写真、言葉、体験）に対して同じインタラクション機能を再利用できます。
+
+```python
+# Djangoでの実装例
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'content_type', 'object_id')
+```
+
+この設計により、API の一貫性が保たれ、将来的なコンテンツタイプの追加にも柔軟に対応できます。
