@@ -6,12 +6,15 @@
 
 ```
 / - ホームページ
+/home - ホームページ
 /auth/login - ログインページ
 /auth/register - ユーザー登録ページ
 /dashboard - ユーザーダッシュボード
 /dashboard/photos - ユーザーの写真投稿一覧
 /dashboard/words - ユーザーの言葉投稿一覧
+/dashboard/experiences - ユーザーの体験投稿一覧
 /dashboard/likes - ユーザーのいいね一覧
+/dashboard/bookmarks - ユーザーのブックマーク一覧
 /settings - ユーザー設定ページ
 ```
 
@@ -35,7 +38,7 @@
 
 # UX向上
 /tags - タグ一覧ページ
-/notifications - 通知一覧ページ  
+/notifications - 通知一覧ページ
 ```
 
 ## バックエンド API エンドポイント設計
@@ -43,7 +46,7 @@
 ### 認証関連
 
 ```
-POST /api/auth/register - ユーザー登録
+POST /api/auth/register - ユーザー登録（言語関連情報を含む）
 POST /api/auth/login - ログイン
 POST /api/auth/logout - ログアウト
 GET /api/auth/user - 現在のユーザー情報取得
@@ -60,9 +63,11 @@ PUT /api/photos/{id} - 写真更新
 DELETE /api/photos/{id} - 写真削除
 POST /api/photos/{id}/like - 写真にいいね
 DELETE /api/photos/{id}/like - いいね取り消し
+POST /api/photos/{id}/bookmark - 写真をブックマーク
+DELETE /api/photos/{id}/bookmark - ブックマーク取り消し
 GET /api/photos/{id}/comments - コメント一覧取得
 POST /api/photos/{id}/comments - コメント投稿
-GET /api/photos/{id}/tags - タグ一覧取得    
+GET /api/photos/{id}/tags - タグ一覧取得
 POST /api/photos/{id}/tags - タグ追加
 DELETE /api/photos/{id}/tags/{tag_id} - タグ削除
 ```
@@ -78,6 +83,8 @@ PUT /api/words/{id} - 言葉更新
 DELETE /api/words/{id} - 言葉削除
 POST /api/words/{id}/like - 言葉にいいね
 DELETE /api/words/{id}/like - いいね取り消し
+POST /api/words/{id}/bookmark - 言葉をブックマーク
+DELETE /api/words/{id}/bookmark - ブックマーク取り消し
 GET /api/words/{id}/comments - コメント一覧取得
 POST /api/words/{id}/comments - コメント投稿
 GET /api/words/{id}/tags - タグ一覧取得
@@ -96,6 +103,8 @@ PUT /api/experiences/{id} - 体験更新
 DELETE /api/experiences/{id} - 体験削除
 POST /api/experiences/{id}/like - 体験にいいね
 DELETE /api/experiences/{id}/like - いいね取り消し
+POST /api/experiences/{id}/bookmark - 体験をブックマーク
+DELETE /api/experiences/{id}/bookmark - ブックマーク取り消し
 GET /api/experiences/{id}/comments - コメント一覧取得
 POST /api/experiences/{id}/comments - コメント投稿
 GET /api/experiences/{id}/tags - タグ一覧取得
@@ -109,7 +118,21 @@ DELETE /api/experiences/{id}/tags/{tag_id} - タグ削除
 DELETE /api/comments/{comment_id} - コメント削除
 ```
 
-# タグ関連（共通）
+### いいね関連（共通）
+
+```
+POST /api/likes - いいね追加（Generic Foreign Key対応）
+DELETE /api/likes/{content_type}/{object_id} - いいね削除
+```
+
+### ブックマーク関連（共通）
+
+```
+POST /api/bookmarks - ブックマーク追加（Generic Foreign Key対応）
+DELETE /api/bookmarks/{content_type}/{object_id} - ブックマーク削除
+```
+
+### タグ関連（共通）
 
 ```
 GET /api/tags - タグ一覧取得
@@ -131,6 +154,123 @@ GET /api/users/{id}/photos - ユーザーの写真一覧
 GET /api/users/{id}/words - ユーザーの言葉一覧
 GET /api/users/{id}/experiences - ユーザーの体験一覧
 GET /api/users/{id}/likes - ユーザーのいいね一覧
-PUT /api/users/{id} - プロフィール更新
+GET /api/users/{id}/bookmarks - ユーザーのブックマーク一覧
+PUT /api/users/{id} - プロフィール更新（言語情報を含む）
 ```
 
+## API リクエスト/レスポンス構造例
+
+### ユーザー登録
+
+**リクエスト**
+
+```json
+POST /api/auth/register
+{
+  "username": "tanaka_jp",
+  "password": "securepassword123",
+  "is_japanese": true,
+  "native_language": "japanese",
+  "japanese_level": "native",
+  "english_level": "intermediate"
+}
+```
+
+**レスポンス**
+
+```json
+{
+  "id": 1,
+  "username": "tanaka_jp",
+  "is_japanese": true,
+  "native_language": "japanese",
+  "japanese_level": "native",
+  "english_level": "intermediate",
+  "created_at": "2023-06-01T12:34:56Z",
+  "updated_at": "2023-06-01T12:34:56Z"
+}
+```
+
+### コメント投稿
+
+**リクエスト**
+
+```json
+POST /api/photos/1/comments
+{
+  "content": "素晴らしい写真ですね！"
+}
+```
+
+**レスポンス**
+
+```json
+{
+  "id": 1,
+  "content": "素晴らしい写真ですね！",
+  "user": {
+    "id": 1,
+    "username": "tanaka_jp"
+  },
+  "content_type": "photo",
+  "object_id": 1,
+  "created_at": "2023-06-01T13:45:12Z",
+  "updated_at": "2023-06-01T13:45:12Z"
+}
+```
+
+### いいね追加（Generic Foreign Key 使用）
+
+**リクエスト**
+
+```json
+POST /api/likes
+{
+  "content_type": "photo",
+  "object_id": 1
+}
+```
+
+**レスポンス**
+
+```json
+{
+  "id": 1,
+  "user": {
+    "id": 1,
+    "username": "tanaka_jp"
+  },
+  "content_type": "photo",
+  "object_id": 1,
+  "created_at": "2023-06-01T14:23:45Z",
+  "updated_at": "2023-06-01T14:23:45Z"
+}
+```
+
+### ブックマーク追加（Generic Foreign Key 使用）
+
+**リクエスト**
+
+```json
+POST /api/bookmarks
+{
+  "content_type": "experience",
+  "object_id": 2
+}
+```
+
+**レスポンス**
+
+```json
+{
+  "id": 1,
+  "user": {
+    "id": 1,
+    "username": "tanaka_jp"
+  },
+  "content_type": "experience",
+  "object_id": 2,
+  "created_at": "2023-06-01T15:10:22Z",
+  "updated_at": "2023-06-01T15:10:22Z"
+}
+```

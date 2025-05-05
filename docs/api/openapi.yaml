@@ -27,7 +27,21 @@ components:
           type: string
         is_japanese:
           type: boolean
+        native_language:
+          type: string
+          description: ユーザーの母国語
+        japanese_level:
+          type: string
+          enum: [beginner, intermediate, advanced, native]
+          description: 日本語レベル
+        english_level:
+          type: string
+          enum: [beginner, intermediate, advanced, native]
+          description: 英語レベル
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
 
@@ -49,6 +63,9 @@ components:
         created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
     Word:
       type: object
@@ -66,6 +83,9 @@ components:
         likes:
           type: integer
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
 
@@ -89,6 +109,9 @@ components:
         created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
     Error:
       type: object
@@ -103,6 +126,68 @@ components:
             type: array
             items:
               type: string
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        content_type:
+          type: string
+          description: コンテンツのタイプ（例：photo, word, experience）
+        object_id:
+          type: integer
+          description: コンテンツのID
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Like:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          $ref: "#/components/schemas/User"
+        content_type:
+          type: string
+          description: コンテンツのタイプ（例：photo, word, experience）
+        object_id:
+          type: integer
+          description: コンテンツのID
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          $ref: "#/components/schemas/User"
+        content_type:
+          type: string
+          description: コンテンツのタイプ（例：photo, word, experience）
+        object_id:
+          type: integer
+          description: コンテンツのID
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
 paths:
   /api/auth/register:
@@ -121,10 +206,22 @@ paths:
                   type: string
                 is_japanese:
                   type: boolean
+                native_language:
+                  type: string
+                  description: ユーザーの母国語
+                japanese_level:
+                  type: string
+                  enum: [beginner, intermediate, advanced, native]
+                  description: 日本語レベル
+                english_level:
+                  type: string
+                  enum: [beginner, intermediate, advanced, native]
+                  description: 英語レベル
               required:
                 - username
                 - password
                 - is_japanese
+                - native_language
       responses:
         "201":
           description: 登録成功
@@ -370,17 +467,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    content:
-                      type: string
-                    user:
-                      $ref: "#/components/schemas/User"
-                    created_at:
-                      type: string
-                      format: date-time
+                  $ref: "#/components/schemas/Comment"
     post:
       summary: 写真にコメント投稿
       security:
@@ -402,17 +489,89 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  content:
-                    type: string
-                  user:
-                    $ref: "#/components/schemas/User"
-                  created_at:
-                    type: string
-                    format: date-time
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/photos/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 写真にいいねする
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: いいね成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Like"
+        "400":
+          description: すでにいいね済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: いいねを取り消す
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: いいね取り消し成功
+        "404":
+          description: いいねが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/photos/{id}/bookmark:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 写真をブックマークする
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: ブックマーク成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bookmark"
+        "400":
+          description: すでにブックマーク済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: ブックマークを取り消す
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: ブックマーク取り消し成功
+        "404":
+          description: ブックマークが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/photos/{id}/tags:
     parameters:
@@ -486,28 +645,6 @@ paths:
       responses:
         "204":
           description: タグ削除成功
-
-  /api/photos/{id}/like:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-    post:
-      summary: 写真にいいね
-      security:
-        - bearerAuth: []
-      responses:
-        "201":
-          description: いいね成功
-    delete:
-      summary: いいね取り消し
-      security:
-        - bearerAuth: []
-      responses:
-        "204":
-          description: いいね取り消し成功
 
   /api/words:
     get:
@@ -647,28 +784,6 @@ paths:
         "204":
           description: 削除成功
 
-  /api/words/{id}/like:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-    post:
-      summary: 言葉にいいね
-      security:
-        - bearerAuth: []
-      responses:
-        "201":
-          description: いいね成功
-    delete:
-      summary: いいね取り消し
-      security:
-        - bearerAuth: []
-      responses:
-        "204":
-          description: いいね取り消し成功
-
   /api/words/{id}/comments:
     parameters:
       - name: id
@@ -677,7 +792,7 @@ paths:
         schema:
           type: integer
     get:
-      summary: 言葉のコメント一覧取得
+      summary: 単語のコメント一覧取得
       security:
         - bearerAuth: []
       responses:
@@ -688,19 +803,9 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    content:
-                      type: string
-                    user:
-                      $ref: "#/components/schemas/User"
-                    created_at:
-                      type: string
-                      format: date-time
+                  $ref: "#/components/schemas/Comment"
     post:
-      summary: 言葉にコメント投稿
+      summary: 単語にコメント投稿
       security:
         - bearerAuth: []
       requestBody:
@@ -720,17 +825,89 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  content:
-                    type: string
-                  user:
-                    $ref: "#/components/schemas/User"
-                  created_at:
-                    type: string
-                    format: date-time
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/words/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 単語にいいねする
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: いいね成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Like"
+        "400":
+          description: すでにいいね済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: いいねを取り消す
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: いいね取り消し成功
+        "404":
+          description: いいねが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/words/{id}/bookmark:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 単語をブックマークする
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: ブックマーク成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bookmark"
+        "400":
+          description: すでにブックマーク済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: ブックマークを取り消す
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: ブックマーク取り消し成功
+        "404":
+          description: ブックマークが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/words/{id}/tags:
     parameters:
@@ -954,28 +1131,6 @@ paths:
         "204":
           description: 削除成功
 
-  /api/experiences/{id}/like:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-    post:
-      summary: 体験にいいね
-      security:
-        - bearerAuth: []
-      responses:
-        "201":
-          description: いいね成功
-    delete:
-      summary: いいね取り消し
-      security:
-        - bearerAuth: []
-      responses:
-        "204":
-          description: いいね取り消し成功
-
   /api/experiences/{id}/comments:
     parameters:
       - name: id
@@ -995,17 +1150,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    content:
-                      type: string
-                    user:
-                      $ref: "#/components/schemas/User"
-                    created_at:
-                      type: string
-                      format: date-time
+                  $ref: "#/components/schemas/Comment"
     post:
       summary: 体験にコメント投稿
       security:
@@ -1027,17 +1172,89 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  content:
-                    type: string
-                  user:
-                    $ref: "#/components/schemas/User"
-                  created_at:
-                    type: string
-                    format: date-time
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/experiences/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 体験にいいねする
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: いいね成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Like"
+        "400":
+          description: すでにいいね済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: いいねを取り消す
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: いいね取り消し成功
+        "404":
+          description: いいねが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/experiences/{id}/bookmark:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: 体験をブックマークする
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: ブックマーク成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bookmark"
+        "400":
+          description: すでにブックマーク済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: ブックマークを取り消す
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: ブックマーク取り消し成功
+        "404":
+          description: ブックマークが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/experiences/{id}/tags:
     parameters:
@@ -1401,5 +1618,124 @@ paths:
                     object_id:
                       type: integer
                     created_at:
+                      type: string
+                      format: date-time
+
+  /api/docs:
+    get:
+      summary: API仕様書を表示
+      description: OpenAPI仕様書のUIを提供
+      responses:
+        "200":
+          description: Swagger UI（HTML）
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api/docs/openapi.json:
+    get:
+      summary: OpenAPI仕様（JSON形式）の取得
+      description: OpenAPI仕様をJSON形式で提供
+      responses:
+        "200":
+          description: OpenAPI仕様（JSON）
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/bookmarks:
+    post:
+      summary: ブックマーク追加
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content_type:
+                  type: string
+                  enum: [photo, word, experience]
+                object_id:
+                  type: integer
+              required:
+                - content_type
+                - object_id
+      responses:
+        "201":
+          description: ブックマーク成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  content_type:
+                    type: string
+                  object_id:
+                    type: integer
+                  user:
+                    $ref: "#/components/schemas/User"
+
+  /api/bookmarks/{content_type}/{object_id}:
+    delete:
+      summary: ブックマーク削除
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: content_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [photo, word, experience]
+        - name: object_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: ブックマーク削除成功
+
+  /api/users/{id}/bookmarks:
+    get:
+      summary: ユーザーのブックマーク一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザーのブックマーク一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    content_type:
+                      type: string
+                    object_id:
+                      type: integer
+                    content_object:
+                      type: object
+                      description: コンテンツオブジェクト（Photo, Word, Experience のいずれか）
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
                       type: string
                       format: date-time

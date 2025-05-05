@@ -31,20 +31,27 @@ erDiagram
         string password
         string profile_image
         text bio
-        string language_level
+        string native_language
+        string japanese_level
+        string english_level
         boolean is_japanese
         datetime created_at
+        datetime updated_at
     }
 
     Category {
         int id PK
         string name
         text description
+        datetime created_at
+        datetime updated_at
     }
 
     Tag {
         int id PK
         string name
+        datetime created_at
+        datetime updated_at
     }
 
     Photo {
@@ -108,6 +115,7 @@ erDiagram
         string content_type
         int object_id
         datetime created_at
+        datetime updated_at
     }
 
     Bookmark {
@@ -116,26 +124,35 @@ erDiagram
         string content_type
         int object_id
         datetime created_at
+        datetime updated_at
     }
 
     Photo_Tag {
         int photo_id FK
         int tag_id FK
+        datetime created_at
+        datetime updated_at
     }
 
     Word_Tag {
         int word_id FK
         int tag_id FK
+        datetime created_at
+        datetime updated_at
     }
 
     Experience_Tag {
         int experience_id FK
         int tag_id FK
+        datetime created_at
+        datetime updated_at
     }
 
     Experience_Photo {
         int experience_id FK
         int photo_id FK
+        datetime created_at
+        datetime updated_at
     }
 ```
 
@@ -143,17 +160,21 @@ erDiagram
 
 ### Users テーブル
 
-| カラム名       | 型           | NULL | デフォルト        | キー   | 説明                       |
-| -------------- | ------------ | ---- | ----------------- | ------ | -------------------------- |
-| id             | INTEGER      | NO   | AUTO_INCREMENT    | PK     | ユーザー ID                |
-| username       | VARCHAR(100) | NO   | -                 | UNIQUE | ユーザー名                 |
-| email          | VARCHAR(254) | NO   | -                 | UNIQUE | メールアドレス             |
-| password       | VARCHAR(128) | NO   | -                 | -      | ハッシュ化されたパスワード |
-| profile_image  | VARCHAR(255) | YES  | NULL              | -      | プロフィール画像パス       |
-| bio            | TEXT         | YES  | NULL              | -      | 自己紹介文                 |
-| language_level | VARCHAR(50)  | YES  | NULL              | -      | 言語レベル                 |
-| is_japanese    | BOOLEAN      | NO   | false             | -      | 日本人フラグ               |
-| created_at     | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                   |
+| カラム名             | 型            | NULL | デフォルト              | キー     | 説明                       |
+| ---------------- | ------------ | ---- | ------------------ | ------ | ------------------------ |
+| id               | INTEGER      | NO   | AUTO_INCREMENT    | PK     | ユーザー ID                  |
+| username         | VARCHAR(100) | NO   | -                  | UNIQUE | ユーザー名                    |
+| email            | VARCHAR(254) | NO   | -                  | UNIQUE | メールアドレス                  |
+| password         | VARCHAR(128) | NO   | -                  | -      | ハッシュ化されたパスワード            |
+| profile_image   | VARCHAR(255) | YES  | NULL               | -      | プロフィール画像パス               |
+| bio              | TEXT         | YES  | NULL               | -      | 自己紹介文                    |
+| native_language | VARCHAR(50)  | YES  | NULL               | -      | 母語                       |
+| japanese_level  | VARCHAR(50)  | YES  | NULL               | -      | 日本語レベル                 |
+| english_level   | VARCHAR(50)  | YES  | NULL               | -      | 英語レベル                  |
+| is_japanese     | BOOLEAN      | NO   | false              | -      | 日本人フラグ（true/false）       |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
+
 
 インデックス:
 - username (UNIQUE)
@@ -167,6 +188,8 @@ erDiagram
 | id          | INTEGER      | NO   | AUTO_INCREMENT    | PK   | カテゴリID |
 | name        | VARCHAR(100) | NO   | -                 | -    | カテゴリ名 |
 | description | TEXT         | YES  | NULL              | -    | 説明       |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - name
@@ -177,6 +200,8 @@ erDiagram
 | -------- | ----------- | ---- | -------------- | ---- | ------ |
 | id       | INTEGER     | NO   | AUTO_INCREMENT | PK   | タグID |
 | name     | VARCHAR(50) | NO   | -              | -    | タグ名 |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - name
@@ -279,7 +304,8 @@ erDiagram
 | user_id      | INTEGER      | NO   | -                 | FK   | ユーザー ID      |
 | content_type | VARCHAR(100) | NO   | -                 | -    | コンテンツタイプ |
 | object_id    | INTEGER      | NO   | -                 | -    | コンテンツ ID    |
-| created_at   | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | いいね日時       |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - user_id
@@ -293,7 +319,8 @@ erDiagram
 | user_id      | INTEGER      | NO   | -                 | FK   | ユーザー ID          |
 | content_type | VARCHAR(100) | NO   | -                 | -    | コンテンツタイプ     |
 | object_id    | INTEGER      | NO   | -                 | -    | コンテンツ ID        |
-| created_at   | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | ブックマーク作成日時 |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - user_id
@@ -305,6 +332,8 @@ erDiagram
 | --------- | ------- | ---- | ---------- | ---- | ------- |
 | photo_id  | INTEGER | NO   | -          | FK   | 写真 ID |
 | tag_id    | INTEGER | NO   | -          | FK   | タグ ID |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - (photo_id, tag_id) (UNIQUE)
@@ -316,6 +345,8 @@ erDiagram
 | -------- | ------- | ---- | ---------- | ---- | ------- |
 | word_id  | INTEGER | NO   | -          | FK   | 言葉 ID |
 | tag_id   | INTEGER | NO   | -          | FK   | タグ ID |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - (word_id, tag_id) (UNIQUE)
@@ -327,6 +358,8 @@ erDiagram
 | ------------- | ------- | ---- | ---------- | ---- | ------- |
 | experience_id | INTEGER | NO   | -          | FK   | 体験 ID |
 | tag_id        | INTEGER | NO   | -          | FK   | タグ ID |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - (experience_id, tag_id) (UNIQUE)
@@ -338,6 +371,8 @@ erDiagram
 | ------------- | ------- | ---- | ---------- | ---- | ------- |
 | experience_id | INTEGER | NO   | -          | FK   | 体験 ID |
 | photo_id      | INTEGER | NO   | -          | FK   | 写真 ID |
+| created_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -      | 作成日時                     |
+| updated_at      | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
 インデックス:
 - (experience_id, photo_id) (UNIQUE)
@@ -376,38 +411,77 @@ erDiagram
 7. Experience_Tag (experience_id, tag_id)
 8. Experience_Photo (experience_id, photo_id)
 
+
+
+
+
+
 ## Django モデル実装例
 
 ```python
-from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-
 class User(models.Model):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)  # ハッシュ化されることを前提
     profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
     bio = models.TextField(blank=True)
-    LANGUAGE_LEVELS = [
-        ('beginner', '初級'),
-        ('intermediate', '中級'),
-        ('advanced', '上級'),
-        ('native', 'ネイティブ'),
-    ]
-    language_level = models.CharField(max_length=50, choices=LANGUAGE_LEVELS, blank=True)
-    is_japanese = models.BooleanField(default=False)
+    native_language = models.CharField(
+        max_length=50, 
+        choices=LANGUAGE_CHOICES,
+        verbose_name="母国語"
+    )
+    japanese_level = models.CharField(
+        max_length=20, 
+        choices=LANGUAGE_LEVELS, 
+        blank=True, 
+        null=True,
+        verbose_name="日本語レベル"
+    )
+    english_level = models.CharField(
+        max_length=20, 
+        choices=LANGUAGE_LEVELS, 
+        blank=True, 
+        null=True,
+        verbose_name="英語レベル"
+    )
+    is_japanese = models.BooleanField(default=False, verbose_name="日本人フラグ")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # 言語
+    LANGUAGE_CHOICES = [
+        ('japanese', '日本語'),
+        ('english', '英語'),
+        ('chinese', '中国語'),
+        ('korean', '韓国語'),
+        ('french', 'フランス語'),
+        ('german', 'ドイツ語'),
+        ('spanish', 'スペイン語'),
+        ('other', 'その他'),
+    ]
     
+    # 言語レベル区分
+    LANGUAGE_LEVELS = [
+        ('none', '学習経験なし'),
+        ('beginner', '少しわかる（初心者レベル）'),
+        ('daily', '日常会話レベル'),
+        ('business', 'ビジネスレベル'),
+        ('native', 'ネイティブレベル'),
+    ]
+
     class Meta:
         indexes = [
             models.Index(fields=['username']),
             models.Index(fields=['email']),
+            models.Index(fields=['native_language']),
+            models.Index(fields=['japanese_level']),
+            models.Index(fields=['english_level']),
             models.Index(fields=['created_at']),
         ]
     
     def __str__(self):
         return self.username
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

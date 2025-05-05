@@ -1,0 +1,164 @@
+# This is Japan データベースER図
+
+[users]
+  *id {label: "bigint, not null"}
+  username {label: "varchar(100), not null, uniq"}
+  email {label: "varchar(254), not null, uniq"}
+  password {label: "varchar(128), not null"}
+  profile_image {label: "varchar(255), null"}
+  bio {label: "text, null"}
+  native_language {label: "varchar(50), null"}
+  japanese_level {label: "varchar(50), null"}
+  english_level {label: "varchar(50), null"}
+  is_japanese {label: "boolean, not null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[categories]
+  *id {label: "bigint, not null"}
+  name {label: "varchar(100), not null"}
+  description {label: "text, null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[tags]
+  *id {label: "bigint, not null"}
+  name {label: "varchar(50), not null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[photos] {bgcolor: "#d0e0d0"}
+  *id {label: "bigint, not null"}
+  title {label: "varchar(200), not null"}
+  description {label: "text, null"}
+  image {label: "varchar(255), not null"}
+  user_id {label: "bigint, not null, FK(users)"}
+  category_id {label: "bigint, null, FK(categories)"}
+  location_name {label: "varchar(200), null"}
+  latitude {label: "float, null"}
+  longitude {label: "float, null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[words] {bgcolor: "#e0d0d0"}
+  *id {label: "bigint, not null"}
+  original {label: "varchar(100), not null"}
+  furigana {label: "varchar(200), null"}
+  translation {label: "varchar(200), not null"}
+  description {label: "text, null"}
+  example {label: "text, null"}
+  level {label: "varchar(20), null"}
+  user_id {label: "bigint, not null, FK(users)"}
+  category_id {label: "bigint, null, FK(categories)"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[experiences] {bgcolor: "#d0d0e0"}
+  *id {label: "bigint, not null"}
+  title {label: "varchar(200), not null"}
+  description {label: "text, null"}
+  address {label: "varchar(255), not null"}
+  latitude {label: "float, not null"}
+  longitude {label: "float, not null"}
+  price_info {label: "text, null"}
+  availability {label: "text, null"}
+  seasonal_info {label: "varchar(100), null"}
+  language_support {label: "varchar(255), null"}
+  user_id {label: "bigint, not null, FK(users)"}
+  category_id {label: "bigint, null, FK(categories)"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[comments] {bgcolor: "#f0f0d0"}
+  *id {label: "bigint, not null"}
+  user_id {label: "bigint, not null, FK(users)"}
+  content_type {label: "varchar(100), not null"}
+  object_id {label: "bigint, not null"}
+  content {label: "text, not null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[likes] {bgcolor: "#f0d0f0"}
+  *id {label: "bigint, not null"}
+  user_id {label: "bigint, not null, FK(users)"}
+  content_type {label: "varchar(100), not null"}
+  object_id {label: "bigint, not null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[bookmarks] {bgcolor: "#d0f0f0"}
+  *id {label: "bigint, not null"}
+  user_id {label: "bigint, not null, FK(users)"}
+  content_type {label: "varchar(100), not null"}
+  object_id {label: "bigint, not null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[photos_tags]
+  *id {label: "bigint, not null"}
+  photo_id {label: "bigint, not null, FK(photos)"}
+  tag_id {label: "bigint, not null, FK(tags)"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[words_tags]
+  *id {label: "bigint, not null"}
+  word_id {label: "bigint, not null, FK(words)"}
+  tag_id {label: "bigint, not null, FK(tags)"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[experiences_tags]
+  *id {label: "bigint, not null"}
+  experience_id {label: "bigint, not null, FK(experiences)"}
+  tag_id {label: "bigint, not null, FK(tags)"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+[experiences_photos]
+  *id {label: "bigint, not null"}
+  experience_id {label: "bigint, not null, FK(experiences)"}
+  photo_id {label: "bigint, not null, FK(photos)"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
+# リレーションシップ定義
+# ユーザーとコンテンツの関係
+users *--+ photos
+users *--+ words
+users *--+ experiences
+users *--+ comments
+users *--+ likes
+users *--+ bookmarks
+
+# カテゴリーとコンテンツの関係
+categories ?--* photos
+categories ?--* words
+categories ?--* experiences
+
+# タグとコンテンツの関係（多対多）
+photos *--* tags {label: "photos_tags"}
+words *--* tags {label: "words_tags"}
+experiences *--* tags {label: "experiences_tags"}
+
+# コンテンツとコメント・いいね・ブックマークの関係（Generic Foreign Key）
+# Django実装ではContentTypeフレームワークを使用
+# comments.content_type + comments.object_id → 任意のコンテンツ（photos, words, experiencesなど）
+# likes.content_type + likes.object_id → 任意のコンテンツ
+# bookmarks.content_type + bookmarks.object_id → 任意のコンテンツ
+
+# 写真とコメント・いいねの疑似関係（実際の実装はGeneric Relationを使用）
+photos *--* comments {label: "Generic Relation"}
+words *--* comments {label: "Generic Relation"}
+experiences *--* comments {label: "Generic Relation"}
+
+photos *--* likes {label: "Generic Relation"}
+words *--* likes {label: "Generic Relation"}
+experiences *--* likes {label: "Generic Relation"}
+
+photos *--* bookmarks {label: "Generic Relation"}
+words *--* bookmarks {label: "Generic Relation"}
+experiences *--* bookmarks {label: "Generic Relation"}
+
+# 体験と写真の関係（多対多）
+experiences *--* photos {label: "experiences_photos"} 
