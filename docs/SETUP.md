@@ -15,8 +15,8 @@
 ### 1. リポジトリのクローン
 
 ```bash
-git clone https://github.com/yourusername/ThisIsJapan.git
-cd ThisIsJapan
+git clone https://github.com/hirokishimizu39/ThisIsJapan2.git
+cd ThisIsJapan2
 ```
 
 ### 2. 環境変数の設定
