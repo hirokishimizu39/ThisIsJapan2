@@ -1,135 +1,159 @@
-# 環境構築ガイド
+# This is Japan - 環境構築ガイド
 
-## 必要要件
+このドキュメントでは、This is Japan プロジェクトの開発環境を構築する手順を説明します。
 
-- Node.js 18.x 以上
-- Python 3.11 以上
-- PostgreSQL 15.x 以上
-- Docker (オプション)
+## 必要条件
 
-## フロントエンド環境構築
+開発を始める前に、以下のツールがインストールされていることを確認してください。
 
-1. リポジトリのクローン
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Git](https://git-scm.com/downloads)
 
-```bash
-git clone https://github.com/your-org/ThisIsJapan2.git
-cd ThisIsJapan2
-```
+## 開発環境のセットアップ
 
-2. 依存関係のインストール
+### 1. リポジトリのクローン
 
 ```bash
-npm install
+git clone https://github.com/yourusername/ThisIsJapan.git
+cd ThisIsJapan
 ```
 
-3. 環境変数の設定
+### 2. 環境変数の設定
+
+バックエンド用の環境変数ファイルを作成します。
 
 ```bash
-cp .env.example .env.local
-# .env.localを編集
+cp backend/.env.example backend/.env
 ```
 
-4. 開発サーバーの起動
+必要に応じて`.env`ファイルを編集してください。基本的にはデフォルト設定で開発を始めることができます。
 
-```bash
-npm run dev
-```
-
-## バックエンド環境構築
-
-1. Python 仮想環境の作成と有効化
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
-
-2. 依存関係のインストール
-
-```bash
-pip install -r requirements.txt
-```
-
-3. 環境変数の設定
-
-```bash
-cp .env.example .env
-# .envを編集
-```
-
-4. データベースの設定
-
-```bash
-# PostgreSQLデータベースの作成
-createdb thisisjapan
-
-# マイグレーション
-python manage.py migrate
-```
-
-5. 開発サーバーの起動
-
-```bash
-python manage.py runserver
-```
-
-## Docker 環境（オプション）
-
-1. コンテナのビルドと起動
+### 3. Docker コンテナのビルドと起動
 
 ```bash
 docker-compose up --build
 ```
 
-## 環境変数設定
+これにより、以下のサービスが起動します：
 
-### フロントエンド (.env.local)
+- PostgreSQL データベース: `localhost:5432`
+- Django バックエンド: `localhost:8000`
+- Next.js フロントエンド: `localhost:3000`
 
-```
-DJANGO_API_URL=http://localhost:8000
-NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=http://localhost:3000
-```
+### 4. データベースのマイグレーション
 
-### バックエンド (.env)
+新しいターミナルを開いて、以下のコマンドを実行します：
 
-```
-DEBUG=True
-SECRET_KEY=your-django-secret-key
-ALLOWED_HOSTS=localhost,127.0.0.1
-DATABASE_URL=postgres://user:password@localhost:5432/thisisjapan
+```bash
+docker-compose exec backend python manage.py migrate
 ```
 
-## 動作確認
+### 5. 開発用管理者アカウントの作成（オプション）
 
-1. フロントエンド
+```bash
+docker-compose exec backend python manage.py createsuperuser
+```
 
-- http://localhost:3000 にアクセス
-- 開発者ツールでエラーがないことを確認
+指示に従って、管理者ユーザーを作成してください。
 
-2. バックエンド
+## 開発環境へのアクセス
 
-- http://localhost:8000/admin にアクセス
-- API エンドポイントの動作確認
+- **フロントエンド**: [http://localhost:3000](http://localhost:3000)
+- **バックエンド API**: [http://localhost:8000/api/](http://localhost:8000/api/)
+- **API ドキュメント**: [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/)
+- **Django 管理画面**: [http://localhost:8000/admin/](http://localhost:8000/admin/)
+
+## 開発ワークフロー
+
+### フロントエンド開発
+
+フロントエンドのコードを変更すると、Next.js の開発サーバーが自動的に変更を検知して再ビルドします。
+
+### バックエンド開発
+
+バックエンドのコードを変更した場合、Django 開発サーバーは自動的に変更を検知します。ただし、モデルの変更を行った場合は、マイグレーションを作成して適用する必要があります：
+
+```bash
+docker-compose exec backend python manage.py makemigrations
+docker-compose exec backend python manage.py migrate
+```
+
+### 依存関係の追加
+
+#### バックエンド（Python）
+
+`backend/requirements.txt`に依存関係を追加し、コンテナを再ビルドします：
+
+```bash
+docker-compose build backend
+docker-compose up -d
+```
+
+#### フロントエンド（Node.js）
+
+```bash
+docker-compose exec frontend npm install パッケージ名
+```
+
+または、`frontend/package.json`に依存関係を追加し、コンテナを再ビルドします：
+
+```bash
+docker-compose build frontend
+docker-compose up -d
+```
+
+## テスト実行
+
+### バックエンドテスト
+
+```bash
+docker-compose exec backend python manage.py test
+```
+
+### フロントエンドテスト
+
+```bash
+docker-compose exec frontend npm test
+```
+
+## 開発環境の停止
+
+開発作業を終了する場合は、以下のコマンドでコンテナを停止できます：
+
+```bash
+docker-compose down
+```
+
+データベースのデータを完全に削除してコンテナを停止する場合は：
+
+```bash
+docker-compose down -v
+```
 
 ## トラブルシューティング
 
-### よくある問題と解決方法
+### ポートの競合
 
-1. パッケージのインストールエラー
+指定されたポート（3000、8000、5432）がすでに使用されている場合は、`docker-compose.yml`ファイルでポート設定を変更してください。
+
+### パッケージのインストール問題
+
+依存関係のインストールに問題がある場合は、キャッシュをクリアしてみてください：
 
 ```bash
-npm clean-install
-# または
-pip install -r requirements.txt --no-cache-dir
+docker-compose build --no-cache
 ```
 
-2. データベース接続エラー
+### データベース接続エラー
 
-- PostgreSQL サービスが起動していることを確認
-- DATABASE_URL の設定を確認
+データベースへの接続に問題がある場合は、データベースコンテナが正常に起動しているか確認してください：
 
-3. 環境変数関連のエラー
+```bash
+docker-compose logs db
+```
 
-- .env.local と.env ファイルの存在確認
-- 必要な環境変数がすべて設定されているか確認
+## 補足情報
+
+- 環境変数のカスタマイズについては、`backend/.env.example`と`docker-compose.yml`ファイルを参照してください。
+- 本番環境へのデプロイ手順については、[デプロイメントガイド](deployment/deployment-guide.md)を参照してください。

@@ -376,7 +376,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Photo"
 
-  /api/photos/top:
+  /api/photos/popular:
     get:
       summary: 人気の写真取得
       security:
@@ -713,7 +713,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Word"
 
-  /api/words/top:
+  /api/words/popular:
     get:
       summary: 人気の言葉取得
       security:
@@ -1057,7 +1057,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Experience"
 
-  /api/experiences/top:
+  /api/experiences/popular:
     get:
       summary: 人気の体験取得
       security:
@@ -1477,7 +1477,7 @@ paths:
         "204":
           description: 通知削除成功
 
-  /api/users/{id}:
+  /api/user/{id}:
     get:
       summary: ユーザー情報取得
       security:
@@ -1527,7 +1527,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
 
-  /api/users/{id}/photos:
+  /api/user/{id}/photos:
     get:
       summary: ユーザーの写真一覧
       security:
@@ -1548,7 +1548,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Photo"
 
-  /api/users/{id}/words:
+  /api/user/{id}/words:
     get:
       summary: ユーザーの言葉一覧
       security:
@@ -1569,7 +1569,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Word"
 
-  /api/users/{id}/experiences:
+  /api/user/{id}/experiences:
     get:
       summary: ユーザーの体験一覧
       security:
@@ -1590,7 +1590,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Experience"
 
-  /api/users/{id}/likes:
+  /api/user/{id}/likes:
     get:
       summary: ユーザーのいいね一覧
       security:
@@ -1703,7 +1703,7 @@ paths:
         "204":
           description: ブックマーク削除成功
 
-  /api/users/{id}/bookmarks:
+  /api/user/{id}/bookmarks:
     get:
       summary: ユーザーのブックマーク一覧
       security:

@@ -56,7 +56,7 @@ GET /api/auth/user - 現在のユーザー情報取得
 
 ```
 GET /api/photos - 写真一覧取得（クエリパラメータでフィルタリング）
-GET /api/photos/top - 人気の写真取得
+GET /api/photos/popular - 人気の写真取得
 GET /api/photos/{id} - 特定の写真取得
 POST /api/photos - 写真投稿
 PUT /api/photos/{id} - 写真更新
@@ -76,7 +76,7 @@ DELETE /api/photos/{id}/tags/{tag_id} - タグ削除
 
 ```
 GET /api/words - 言葉一覧取得（クエリパラメータでフィルタリング）
-GET /api/words/top - 人気の言葉取得
+GET /api/words/popular - 人気の言葉取得
 GET /api/words/{id} - 特定の言葉取得
 POST /api/words - 言葉投稿
 PUT /api/words/{id} - 言葉更新
@@ -96,7 +96,7 @@ DELETE /api/words/{id}/tags/{tag_id} - タグ削除
 
 ```
 GET /api/experiences - 体験一覧取得（クエリパラメータでフィルタリング）
-GET /api/experiences/top - 人気の体験取得
+GET /api/experiences/popular - 人気の体験取得
 GET /api/experiences/{id} - 特定の体験取得
 POST /api/experiences - 体験投稿
 PUT /api/experiences/{id} - 体験更新
@@ -149,13 +149,13 @@ DELETE /api/notifications/{id} - 通知削除（任意）
 ### ユーザー関連
 
 ```
-GET /api/users/{id} - ユーザー情報取得
-GET /api/users/{id}/photos - ユーザーの写真一覧
-GET /api/users/{id}/words - ユーザーの言葉一覧
-GET /api/users/{id}/experiences - ユーザーの体験一覧
-GET /api/users/{id}/likes - ユーザーのいいね一覧
-GET /api/users/{id}/bookmarks - ユーザーのブックマーク一覧
-PUT /api/users/{id} - プロフィール更新（言語情報を含む）
+GET /api/user/{id} - ユーザー情報取得
+GET /api/user/{id}/photos - ユーザーの写真一覧
+GET /api/user/{id}/words - ユーザーの言葉一覧
+GET /api/user/{id}/experiences - ユーザーの体験一覧
+GET /api/user/{id}/likes - ユーザーのいいね一覧
+GET /api/user/{id}/bookmarks - ユーザーのブックマーク一覧
+PUT /api/user/{id} - プロフィール更新（言語情報を含む）
 ```
 
 ## API リクエスト/レスポンス構造例
@@ -321,5 +321,3 @@ class Like(models.Model):
     class Meta:
         unique_together = ('user', 'content_type', 'object_id')
 ```
-
-この設計により、API の一貫性が保たれ、将来的なコンテンツタイプの追加にも柔軟に対応できます。
