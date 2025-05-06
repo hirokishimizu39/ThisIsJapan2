@@ -54,7 +54,7 @@
 
 - **フロントエンド**:
 
-  - Next.js 14 (App Router)
+  - Next.js 15.3.1 (App Router)
   - TypeScript
   - TailwindCSS
   - shadcn/ui
@@ -71,7 +71,7 @@
 ```
 dev/
 └── ThisIsJapan/
-    ├── frontend/                  # Next.js 14 (App Router)
+    ├── frontend/                  # Next.js 15.3.1 (App Router)
     │   ├── app/                   # フロントエンドのルーティング構造
     │   │   ├── (auth)/           # 認証関連ルート
     │   │   │   ├── login/        # ログインページ
