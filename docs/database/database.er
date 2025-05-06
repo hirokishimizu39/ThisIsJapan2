@@ -94,6 +94,21 @@
   created_at {label: "timestamp, not null"}
   updated_at {label: "timestamp, not null"}
 
+[notifications] {bgcolor: "#f0f0e0"}
+  *id {label: "bigint, not null"}
+  recipient_id {label: "bigint, not null, FK(users)"}
+  actor_id {label: "bigint, null, FK(users)"}
+  action_type {label: "varchar(50), not null"}
+  content_type {label: "varchar(100), not null"}
+  object_id {label: "bigint, not null"}
+  message {label: "text, null"}
+  status {label: "varchar(20), not null"}
+  group_id {label: "varchar(100), null"}
+  link {label: "varchar(255), null"}
+  metadata {label: "jsonb, null"}
+  created_at {label: "timestamp, not null"}
+  updated_at {label: "timestamp, not null"}
+
 [photos_tags]
   *id {label: "bigint, not null"}
   photo_id {label: "bigint, not null, FK(photos)"}
@@ -130,6 +145,8 @@ users *--+ experiences
 users *--+ comments
 users *--+ likes
 users *--+ bookmarks
+users *--+ notifications {label: "recipient"}
+users ?--+ notifications {label: "actor"}
 
 # カテゴリーとコンテンツの関係
 categories ?--* photos
@@ -146,6 +163,7 @@ experiences *--* tags {label: "experiences_tags"}
 # comments.content_type + comments.object_id → 任意のコンテンツ（photos, words, experiencesなど）
 # likes.content_type + likes.object_id → 任意のコンテンツ
 # bookmarks.content_type + bookmarks.object_id → 任意のコンテンツ
+# notifications.content_type + notifications.object_id → 任意のコンテンツ
 
 # 写真とコメント・いいねの疑似関係（実際の実装はGeneric Relationを使用）
 photos *--* comments {label: "Generic Relation"}
@@ -159,6 +177,10 @@ experiences *--* likes {label: "Generic Relation"}
 photos *--* bookmarks {label: "Generic Relation"}
 words *--* bookmarks {label: "Generic Relation"}
 experiences *--* bookmarks {label: "Generic Relation"}
+
+photos *--* notifications {label: "Generic Relation"}
+words *--* notifications {label: "Generic Relation"}
+experiences *--* notifications {label: "Generic Relation"}
 
 # 体験と写真の関係（多対多）
 experiences *--* photos {label: "experiences_photos"} 
