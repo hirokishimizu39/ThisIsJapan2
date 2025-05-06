@@ -142,8 +142,12 @@ GET /api/tags - タグ一覧取得
 
 ```
 GET /api/notifications - 通知一覧取得
+POST /api/notifications - 通知作成（システム通知用）
+PUT /api/notifications/{id} - 通知更新
+GET /api/notifications/{id} - 特定の通知取得
 PUT /api/notifications/{id}/read - 通知を既読に
-DELETE /api/notifications/{id} - 通知削除（任意）
+PUT /api/notifications/read-all - すべての通知を既読に
+DELETE /api/notifications/{id} - 通知削除
 ```
 
 ### ユーザー関連
@@ -275,6 +279,130 @@ POST /api/bookmarks
 }
 ```
 
+### 通知一覧取得
+
+**リクエスト**
+
+```
+GET /api/notifications?status=unread&limit=10&offset=0
+```
+
+**レスポンス**
+
+```json
+{
+  "count": 25,
+  "next": "/api/notifications?status=unread&limit=10&offset=10",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "recipient": {
+        "id": 1,
+        "username": "tanaka_jp"
+      },
+      "actor": {
+        "id": 2,
+        "username": "smith_en"
+      },
+      "action_type": "like",
+      "content_type": "photo",
+      "object_id": 5,
+      "message": "smith_enさんがあなたの写真にいいねしました",
+      "status": "unread",
+      "group_id": "photo_5_likes",
+      "link": "/photos/5",
+      "metadata": {
+        "photo_title": "東京の夜景"
+      },
+      "created_at": "2023-06-02T09:15:30Z",
+      "updated_at": "2023-06-02T09:15:30Z"
+    }
+    // 他の通知...
+  ]
+}
+```
+
+### 通知作成（システム通知用）
+
+**リクエスト**
+
+```json
+POST /api/notifications
+{
+  "recipient_id": 1,
+  "action_type": "system",
+  "message": "システムメンテナンスのお知らせ",
+  "link": "/announcements/maintenance",
+  "metadata": {
+    "maintenance_date": "2023-06-10T22:00:00Z",
+    "duration": "2時間"
+  }
+}
+```
+
+**レスポンス**
+
+```json
+{
+  "id": 10,
+  "recipient": {
+    "id": 1,
+    "username": "tanaka_jp"
+  },
+  "actor": null,
+  "action_type": "system",
+  "content_type": null,
+  "object_id": null,
+  "message": "システムメンテナンスのお知らせ",
+  "status": "unread",
+  "group_id": null,
+  "link": "/announcements/maintenance",
+  "metadata": {
+    "maintenance_date": "2023-06-10T22:00:00Z",
+    "duration": "2時間"
+  },
+  "created_at": "2023-06-05T10:30:00Z",
+  "updated_at": "2023-06-05T10:30:00Z"
+}
+```
+
+### 通知を既読に
+
+**リクエスト**
+
+```
+PUT /api/notifications/1/read
+```
+
+**レスポンス**
+
+```json
+{
+  "id": 1,
+  "status": "read",
+  "updated_at": "2023-06-02T10:45:22Z"
+}
+```
+
+### すべての通知を既読に
+
+**リクエスト**
+
+```
+PUT /api/notifications/read-all
+```
+
+**レスポンス**
+
+```json
+{
+  "message": "すべての通知を既読にしました",
+  "count": 15,
+  "updated_at": "2023-06-02T11:30:45Z"
+}
+```
+
 ## OpenAPI 3.0 仕様
 
 API の詳細な仕様は、OpenAPI 3.0 フォーマットで`docs/api/openapi.yaml`に定義されています。このドキュメントには以下の情報が含まれています：
@@ -320,4 +448,36 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ('user', 'content_type', 'object_id')
+```
+
+### 通知システムの実装
+
+通知システムも同様に、Django ContentType フレームワークを使用して実装されています。これにより、様々なタイプのコンテンツ（写真、言葉、体験）に関連する通知を統一的に扱うことができます。
+
+```python
+# 通知モデルの実装例
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
+    actor = models.ForeignKey(User, related_name='actions', null=True, blank=True, on_delete=models.SET_NULL)
+    action_type = models.CharField(max_length=50)  # like, comment, bookmark など
+    content_type = models.ForeignKey(ContentType, null=True, blank=True, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    message = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, default='unread')  # unread, read, archived, deleted
+    group_id = models.CharField(max_length=100, null=True, blank=True)  # 類似通知のグルーピング用(ex. Aさんと他3人があなたの投稿にいいねしました)
+    link = models.CharField(max_length=255, null=True, blank=True)  # 通知クリック時の遷移先
+    metadata = models.JSONField(null=True, blank=True)  # 追加情報
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'actor', 'status', 'group_id', 'created_at']),
+            models.Index(fields=['content_type', 'object_id']),
+        ]
 ```

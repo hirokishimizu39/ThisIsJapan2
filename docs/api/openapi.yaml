@@ -189,6 +189,55 @@ components:
           type: string
           format: date-time
 
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        recipient:
+          $ref: "#/components/schemas/User"
+        actor:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        action_type:
+          type: string
+          description: 通知アクションタイプ（例：like, comment, bookmark, system）
+        content_type:
+          type: string
+          description: コンテンツのタイプ（例：photo, word, experience）
+          nullable: true
+        object_id:
+          type: integer
+          description: コンテンツのID
+          nullable: true
+        message:
+          type: string
+          description: 通知メッセージ内容
+          nullable: true
+        status:
+          type: string
+          enum: [unread, read, archived, deleted]
+          default: unread
+        group_id:
+          type: string
+          description: 通知グルーピング用ID
+          nullable: true
+        link:
+          type: string
+          description: 通知クリック時の遷移先URL/ルート
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 追加情報のJSON
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
 paths:
   /api/auth/register:
     post:
@@ -1425,57 +1474,232 @@ paths:
       summary: 通知一覧取得
       security:
         - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [unread, read, archived, all]
+            default: unread
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
       responses:
         "200":
           description: 通知一覧
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    type:
-                      type: string
-                    content:
-                      type: string
-                    is_read:
-                      type: boolean
-                    created_at:
-                      type: string
-                      format: date-time
-
-  /api/notifications/{id}/read:
-    put:
-      summary: 通知を既読に
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Notification"
+    post:
+      summary: 通知作成 (システム通知用)
       security:
         - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipient_id:
+                  type: integer
+                actor_id:
+                  type: integer
+                  nullable: true
+                action_type:
+                  type: string
+                content_type:
+                  type: string
+                  nullable: true
+                object_id:
+                  type: integer
+                  nullable: true
+                message:
+                  type: string
+                  nullable: true
+                status:
+                  type: string
+                  enum: [unread, read, archived, deleted]
+                  default: unread
+                group_id:
+                  type: string
+                  nullable: true
+                link:
+                  type: string
+                  nullable: true
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+              required:
+                - recipient_id
+                - action_type
       responses:
-        "200":
-          description: 既読設定成功
+        "201":
+          description: 通知作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/notifications/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 特定の通知取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 通知詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "404":
+          description: 通知が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: 通知更新
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [unread, read, archived, deleted]
+                message:
+                  type: string
+                  nullable: true
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+      responses:
+        "200":
+          description: 通知更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: 通知が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     delete:
       summary: 通知削除
       security:
         - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         "204":
           description: 通知削除成功
+        "404":
+          description: 通知が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/notifications/{id}/read:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    put:
+      summary: 通知を既読に
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 既読設定成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  status:
+                    type: string
+                  updated_at:
+                    type: string
+                    format: date-time
+        "404":
+          description: 通知が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/notifications/read-all:
+    put:
+      summary: すべての通知を既読に
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: すべての通知が既読に設定された
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
 
   /api/user/{id}:
     get:
