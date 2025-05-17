@@ -239,6 +239,9 @@ erDiagram
 | location_name | VARCHAR(200) | YES  | NULL              | -    | 場所の名称               |
 | latitude      | FLOAT        | YES  | NULL              | -    | 緯度                     |
 | longitude     | FLOAT        | YES  | NULL              | -    | 経度                     |
+slug              varchar  (max_length=255, unique=True, blank=True)
+is_published      boolean   (default=True)
+views_count       integer   (default=0)
 | created_at    | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 投稿日時                 |
 | updated_at    | TIMESTAMP    | NO   | CURRENT_TIMESTAMP | -    | 更新日時（編集時に更新） |
 
@@ -249,6 +252,8 @@ erDiagram
 - location_name
 - created_at
 - (latitude, longitude)
+- slug
+- is_published
 
 ### Words テーブル
 
