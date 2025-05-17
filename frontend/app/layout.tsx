@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSans.variable} ${notoSerif.variable}`}>
+    <html lang="ja" className={`${inter.variable} ${notoSans.variable} ${notoSerif.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow">
