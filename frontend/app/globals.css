@@ -1,26 +1,103 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 97%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 224 34% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 349 53% 59%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 224 34% 27%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 346.8 77.2% 49.8%;
+    --accent-foreground: 355.7 100% 97.3%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .jp-button {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .jp-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2;
+  }
+
+  .jp-button-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-2;
+  }
+
+  .jp-button-outline {
+    @apply border border-input bg-background hover:bg-secondary hover:text-secondary-foreground px-4 py-2;
+  }
+
+  .jp-button-ghost {
+    @apply hover:bg-secondary hover:text-secondary-foreground px-4 py-2;
+  }
+
+  /* 日本の余白の美学を表現 */
+  .jp-spacing {
+    @apply my-8 p-6;
+  }
+
+  /* 和風カード */
+  .jp-card {
+    @apply bg-white rounded-sm shadow-md overflow-hidden border border-gray-100 transition duration-200;
+  }
+
+  .jp-card:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+
+  /* セクションヘッダー */
+  .jp-section-title {
+    @apply font-serif text-2xl font-bold mb-6 border-b-2 border-indigo-900 pb-2 inline-block;
+  }
 }

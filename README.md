@@ -11,20 +11,20 @@
 
 ## 主要機能
 
-### 1. 写真共有機能
+### 1. 写真共有機能（フェーズ 1）
 
 - 日本の風景や文化的な写真の投稿・閲覧
 - いいね・コメント・ブックマーク機能
 - 人気順表示
 
-### 2. 日本語・言葉の共有
+### 2. 日本語・言葉の共有（フェーズ 1）
 
 - 日本語の言葉や概念の投稿
 - 英語での説明付き
 - いいね・コメント・ブックマーク機能
 - 人気順表示
 
-### 3. 文化体験の紹介
+### 3. 文化体験の紹介（フェーズ 2）
 
 - 日本の伝統文化体験の紹介
 - 場所情報付き
@@ -32,7 +32,7 @@
 - 地図 API を使ったローカルな文化体験の発見
 - いいね・コメント・ブックマーク機能
 
-### 4. ユーザー管理
+### 4. ユーザー管理（フェーズ 1）
 
 - ユーザー登録・ログイン機能
 - 日本人/外国人の区分け
@@ -40,7 +40,7 @@
 - ユーザー別の投稿管理
 - マイページでのいいね・ブックマーク管理
 
-## 独自アルゴリズム
+## 独自アルゴリズム（フェーズ 3）
 
 - 地域分散アルゴリズム
   - 写真・文化体験は地方であるほど優位になるようにする
@@ -50,6 +50,39 @@
   - 外国人 - 日本人マッチング
     - 未定
 
+## システムアーキテクチャ
+
+### BFF（Backend for Frontend）アーキテクチャ
+
+Next.js の Route Handlers を BFF として導入し、フロントエンドとバックエンドの責務を明確に分離します。これにより、今後の保守性とスケーラビリティが向上します。
+
+| 項目         | Next.js Route Handlers                                             | Django REST Framework (DRF)                                           |
+| ------------ | ------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| 主な役割     | UI 最適化 API（BFF）                                               | DB 操作・業務ロジック API                                             |
+| 技術スタック | Next.js / TypeScript                                               | Django / Python                                                       |
+| 主な処理内容 | - 認証済みユーザー取得<br>- SWR 用の柔軟 API<br>- 表示用データ整形 | - 認証・ユーザー管理<br>- 投稿/ブックマーク/通知処理<br>- DB 直接操作 |
+| データ通信   | クライアント → Route Handlers → DRF                                | DRF → PostgreSQL など                                                 |
+
+#### 連携構成（全体図）
+
+```
+[Browser]
+  ↓ fetch（SWRなど）
+[Next.js Route Handlers]
+  ↓ proxy + 加工（token, 整形など）
+[Django REST API]
+  ↓
+[Database / 認証サービス]
+```
+
+#### 主な設計ポイント
+
+- Next.js Route Handlers は UI 要件に即した柔軟な API エンドポイントを提供（例: `/api/photos`）
+- DRF は純粋な業務 API（例: `/api/v1/photos/`）として、ロジックと DB 処理に集中
+- 認証トークン（JWT やセッション）は Route Handlers 経由で DRF に伝達
+- 表示順、翻訳、多言語対応などは Route Handlers 側で担当
+- 型共有には openapi-typescript 等で共通型管理を検討
+
 ## 技術スタック
 
 - **フロントエンド**:
@@ -58,11 +91,18 @@
   - TypeScript
   - TailwindCSS
   - shadcn/ui
-  - SWR
+  - SWR（データフェッチング）
+
+- **BFF（Backend for Frontend）**:
+
+  - Next.js Route Handlers
+  - TypeScript
+  - API 型定義（OpenAPI 連携）
 
 - **バックエンド**:
   - Django REST Framework
   - PostgreSQL
+  - JWT 認証
 
 詳細な技術選定理由については[技術スタック詳細](docs/architecture/technology-stack.md)を参照してください。
 
@@ -73,6 +113,18 @@ dev/
 └── ThisIsJapan/
     ├── frontend/                  # Next.js 15.3.1 (App Router)
     │   ├── app/                   # フロントエンドのルーティング構造
+    │   │   ├── api/               # Route Handlers (BFF、モバイルアプリとの互換性を取るためには、v1とかバージョン管理すると良い)
+    │   │   │   ├── auth/          # 認証関連API
+    │   │   │   ├── photos/          # 写真関連API
+    │   │   │   │   ├── route.ts     # 写真一覧取得 (GET) / 新規作成 (POST)
+    │   │   │   │   ├── [id]/        # 写真ID指定
+    │   │   │   │       ├── route.ts # 写真詳細取得 (GET) / 更新 (PUT, PATCH) / 削除 (DELETE)
+    │   │   │   │       ├── likes/   # 写真に対するいいね
+    │   │   │   │           └── route.ts # いいね追加 (POST) / 削除 (DELETE)
+    │   │   │   ├── words/         # 言葉関連API
+    │   │   │   ├── experiences/   # 体験関連API
+    │   │   │   ├── users/         # ユーザー関連API
+    │   │   │   └── notifications/ # 通知関連API
     │   │   ├── (auth)/           # 認証関連ルート
     │   │   │   ├── login/        # ログインページ
     │   │   │   └── register/     # ユーザー登録ページ
@@ -99,14 +151,17 @@ dev/
     │   ├── components/            # UIコンポーネント
     │   ├── hooks/                 # カスタムフック
     │   ├── lib/                   # ライブラリ・APIクライアント
+    │   │   ├── api/              # API関連ユーティリティ
+    │   │   │   ├── client.ts     # DRF APIクライアント
+    │   │   │   └── types/        # API型定義（OpenAPI連携によって自動生成）
     │   ├── public/                # 静的ファイル
     │   └── styles/                # CSS/Tailwind設定
     │
     └── backend/                   # Django REST Framework
         ├── thisisjapan_api/       # Djangoプロジェクト
         │   ├── settings/          # 設定ファイル
-        │   ├── urls.py           # メインURLルーティング
-        │   └── wsgi.py           # WSGIエントリーポイント
+        │   ├── urls.py            # メインURLルーティング
+        │   └── wsgi.py            # WSGIエントリーポイント
         └── apps/                  # Djangoアプリケーション
             ├── authentication/    # 認証関連のAPI
             │   ├── urls.py        # 認証エンドポイントのURL設定
@@ -143,7 +198,13 @@ dev/
 
 ## API 設計
 
-バックエンドは Django REST Framework を使用した RESTful API として実装され、OpenAPI 3.0 仕様に準拠しています。
+### バックエンド API (Django REST Framework)
+
+バックエンドは Django REST Framework を使用した RESTful API として実装され、OpenAPI 3.0 仕様に準拠しています。バージョニングを導入し、`/api/v1/` のようなプレフィックスでアクセスします。
+
+### フロントエンド API (Next.js Route Handlers)
+
+フロントエンドの Route Handlers は、UI 要件に特化したエンドポイントを提供し、バックエンド API の呼び出し、レスポンスの整形、認証トークン管理などを担当します。`/api/photos` のようなエンドポイントで公開されます。
 
 ### API ドキュメント
 
@@ -170,6 +231,12 @@ dev/
 ## 開発フロー
 
 プロジェクトへの貢献方法については[開発参加ガイド](docs/CONTRIBUTING.md)を参照してください。
+
+### BFF 開発フロー
+
+1. バックエンド API の仕様理解と連携確認
+2. Route Handlers の実装（認証、データ整形）
+3. フロントエンドコンポーネントとの連携テスト
 
 ## デザイン要件
 
@@ -199,3 +266,24 @@ dev/
 - [DB 設計書](docs/database/database-design.md)
 - [API リソース設計書](docs/api/api-specification.md)
 - [デプロイメントガイド](docs/deployment/deployment-guide.md)
+
+## TailwindCSS セットアップ手順
+
+TailwindCSS と関連パッケージは Docker イメージのビルド時に自動的にインストールされます。チームメンバーが環境を構築する場合は、以下のコマンドを実行してください：
+
+```bash
+# コンテナをビルドし直して再起動する
+docker compose build --no-cache frontend
+docker compose up -d
+```
+
+これにより、以下のパッケージが自動的にインストールされます：
+
+- tailwindcss@3.4.1
+- postcss@8.4.35
+- autoprefixer@10.4.18
+
+設定ファイルは以下のディレクトリにあります：
+
+- `frontend/tailwind.config.js`
+- `frontend/postcss.config.js`

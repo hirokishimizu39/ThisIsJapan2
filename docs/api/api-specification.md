@@ -1,5 +1,21 @@
 # API リソース設計書
 
+## アーキテクチャ概要
+
+本プロジェクトは、BFF（Backend for Frontend）アーキテクチャを採用しています。2 種類の API が存在します：
+
+1. **フロントエンド API**: Next.js Route Handlers による BFF（UI 要件に最適化された API）
+2. **バックエンド API**: Django REST Framework による RESTful API（ビジネスロジックとデータ処理）
+
+### API フロー
+
+```
+[ブラウザ/クライアント] → [Next.js Route Handlers] → [Django REST API] → [Database]
+```
+
+- **クライアント →BFF**: UI に最適化された単純なリクエスト（`/api/photos`など）
+- **BFF→ バックエンド**: 内部通信、認証トークンの受け渡し（`/api/v1/photos/`など）
+
 ## フロントエンド URL 設計
 
 ### 認証・ユーザー関連
@@ -41,135 +57,167 @@
 /notifications - 通知一覧ページ
 ```
 
-## バックエンド API エンドポイント設計
+## API エンドポイント設計
 
-### 認証関連
+### フロントエンド API（Next.js Route Handlers）
+
+フロントエンド API は、UI 要件を満たすための最適化されたエンドポイントを提供します。
 
 ```
-POST /api/auth/register - ユーザー登録（言語関連情報を含む）
+# 認証関連
+POST /api/auth/register - ユーザー登録
 POST /api/auth/login - ログイン
 POST /api/auth/logout - ログアウト
-GET /api/auth/user - 現在のユーザー情報取得
-```
+GET /api/auth/me - 現在のユーザー情報取得
 
-### 写真関連
-
-```
-GET /api/photos - 写真一覧取得（クエリパラメータでフィルタリング）
+# 写真関連
+GET /api/photos - 写真一覧取得（UI最適化、フィルタリング、ソート）
 GET /api/photos/popular - 人気の写真取得
-GET /api/photos/{id} - 特定の写真取得
+GET /api/photos/[id] - 特定の写真取得（コメント、いいね、タグ情報も含む）
 POST /api/photos - 写真投稿
-PUT /api/photos/{id} - 写真更新
-DELETE /api/photos/{id} - 写真削除
-POST /api/photos/{id}/like - 写真にいいね
-DELETE /api/photos/{id}/like - いいね取り消し
-POST /api/photos/{id}/bookmark - 写真をブックマーク
-DELETE /api/photos/{id}/bookmark - ブックマーク取り消し
-GET /api/photos/{id}/comments - コメント一覧取得
-POST /api/photos/{id}/comments - コメント投稿
-GET /api/photos/{id}/tags - タグ一覧取得
-POST /api/photos/{id}/tags - タグ追加
-DELETE /api/photos/{id}/tags/{tag_id} - タグ削除
-```
+PUT /api/photos/[id] - 写真更新
+DELETE /api/photos/[id] - 写真削除
+POST /api/photos/[id]/like - いいね追加/削除（トグル式）
+POST /api/photos/[id]/bookmark - ブックマーク追加/削除（トグル式）
+POST /api/photos/[id]/comments - コメント投稿
 
-### 言葉関連
-
-```
-GET /api/words - 言葉一覧取得（クエリパラメータでフィルタリング）
+# 言葉関連
+GET /api/words - 言葉一覧取得
 GET /api/words/popular - 人気の言葉取得
-GET /api/words/{id} - 特定の言葉取得
-POST /api/words - 言葉投稿
-PUT /api/words/{id} - 言葉更新
-DELETE /api/words/{id} - 言葉削除
-POST /api/words/{id}/like - 言葉にいいね
-DELETE /api/words/{id}/like - いいね取り消し
-POST /api/words/{id}/bookmark - 言葉をブックマーク
-DELETE /api/words/{id}/bookmark - ブックマーク取り消し
-GET /api/words/{id}/comments - コメント一覧取得
-POST /api/words/{id}/comments - コメント投稿
-GET /api/words/{id}/tags - タグ一覧取得
-POST /api/words/{id}/tags - タグ追加
-DELETE /api/words/{id}/tags/{tag_id} - タグ削除
-```
+GET /api/words/[id] - 特定の言葉取得
+# 以下、写真と同様の構成
 
-### 体験関連
-
-```
-GET /api/experiences - 体験一覧取得（クエリパラメータでフィルタリング）
+# 体験関連
+GET /api/experiences - 体験一覧取得
 GET /api/experiences/popular - 人気の体験取得
-GET /api/experiences/{id} - 特定の体験取得
-POST /api/experiences - 体験投稿
-PUT /api/experiences/{id} - 体験更新
-DELETE /api/experiences/{id} - 体験削除
-POST /api/experiences/{id}/like - 体験にいいね
-DELETE /api/experiences/{id}/like - いいね取り消し
-POST /api/experiences/{id}/bookmark - 体験をブックマーク
-DELETE /api/experiences/{id}/bookmark - ブックマーク取り消し
-GET /api/experiences/{id}/comments - コメント一覧取得
-POST /api/experiences/{id}/comments - コメント投稿
-GET /api/experiences/{id}/tags - タグ一覧取得
-POST /api/experiences/{id}/tags - タグ追加
-DELETE /api/experiences/{id}/tags/{tag_id} - タグ削除
+GET /api/experiences/[id] - 特定の体験取得
+# 以下、写真と同様の構成
+
+# タグ関連
+GET /api/tags - タグ一覧取得
+
+# 通知関連
+GET /api/notifications - 通知一覧取得
+PUT /api/notifications/read-all - すべての通知を既読に
+PUT /api/notifications/[id] - 通知ステータス更新
+
+# ユーザー関連
+GET /api/user/[id] - ユーザー情報取得
+PUT /api/user/me - 自分のプロフィール更新
+GET /api/user/me/dashboard - ダッシュボード情報を一括取得
 ```
+
+#### BFF のメリット
+
+- **データ集約**: 複数のバックエンド API コールを 1 つのエンドポイントにまとめる（例: ダッシュボード情報）
+- **UI 特化**: クライアントが必要とする形式にデータを整形
+- **認証管理**: トークンの安全な管理と受け渡し
+- **エラーハンドリング**: ユーザーフレンドリーなエラーメッセージ
+
+### バックエンド API（Django REST Framework）
+
+バックエンド API は、ビジネスロジックとデータベース操作のために設計されています。バージョニングを導入しています。
+
+```
+# 認証関連
+POST /api/v1/auth/register - ユーザー登録（言語関連情報を含む）
+POST /api/v1/auth/login - ログイン
+POST /api/v1/auth/logout - ログアウト
+GET /api/v1/auth/user - 現在のユーザー情報取得
+POST /api/v1/auth/token/refresh - リフレッシュトークンによる更新
+
+# 写真関連
+GET /api/v1/photos - 写真一覧取得（クエリパラメータでフィルタリング）
+GET /api/v1/photos/popular - 人気の写真取得
+GET /api/v1/photos/{id} - 特定の写真取得
+POST /api/v1/photos - 写真投稿
+PUT /api/v1/photos/{id} - 写真更新
+DELETE /api/v1/photos/{id} - 写真削除
+POST /api/v1/photos/{id}/like - 写真にいいね
+DELETE /api/v1/photos/{id}/like - いいね取り消し
+POST /api/v1/photos/{id}/bookmark - 写真をブックマーク
+DELETE /api/v1/photos/{id}/bookmark - ブックマーク取り消し
+GET /api/v1/photos/{id}/comments - コメント一覧取得
+POST /api/v1/photos/{id}/comments - コメント投稿
+GET /api/v1/photos/{id}/tags - タグ一覧取得
+POST /api/v1/photos/{id}/tags - タグ追加
+DELETE /api/v1/photos/{id}/tags/{tag_id} - タグ削除
+```
+
+言葉（words）と体験（experiences）も同様のエンドポイント構造を持ちます。
 
 ### コメント関連（共通）
 
 ```
-DELETE /api/comments/{comment_id} - コメント削除
+DELETE /api/v1/comments/{comment_id} - コメント削除
 ```
 
 ### いいね関連（共通）
 
 ```
-POST /api/likes - いいね追加（Generic Foreign Key対応）
-DELETE /api/likes/{content_type}/{object_id} - いいね削除
+POST /api/v1/likes - いいね追加（Generic Foreign Key対応）
+DELETE /api/v1/likes/{content_type}/{object_id} - いいね削除
 ```
 
 ### ブックマーク関連（共通）
 
 ```
-POST /api/bookmarks - ブックマーク追加（Generic Foreign Key対応）
-DELETE /api/bookmarks/{content_type}/{object_id} - ブックマーク削除
+POST /api/v1/bookmarks - ブックマーク追加（Generic Foreign Key対応）
+DELETE /api/v1/bookmarks/{content_type}/{object_id} - ブックマーク削除
 ```
 
 ### タグ関連（共通）
 
 ```
-GET /api/tags - タグ一覧取得
+GET /api/v1/tags - タグ一覧取得
 ```
 
 ### 通知関連
 
 ```
-GET /api/notifications - 通知一覧取得
-POST /api/notifications - 通知作成（システム通知用）
-PUT /api/notifications/{id} - 通知更新
-GET /api/notifications/{id} - 特定の通知取得
-PUT /api/notifications/{id}/read - 通知を既読に
-PUT /api/notifications/read-all - すべての通知を既読に
-DELETE /api/notifications/{id} - 通知削除
+GET /api/v1/notifications - 通知一覧取得
+POST /api/v1/notifications - 通知作成（システム通知用）
+PUT /api/v1/notifications/{id} - 通知更新
+GET /api/v1/notifications/{id} - 特定の通知取得
+PUT /api/v1/notifications/{id}/read - 通知を既読に
+PUT /api/v1/notifications/read-all - すべての通知を既読に
+DELETE /api/v1/notifications/{id} - 通知削除
 ```
 
 ### ユーザー関連
 
 ```
-GET /api/user/{id} - ユーザー情報取得
-GET /api/user/{id}/photos - ユーザーの写真一覧
-GET /api/user/{id}/words - ユーザーの言葉一覧
-GET /api/user/{id}/experiences - ユーザーの体験一覧
-GET /api/user/{id}/likes - ユーザーのいいね一覧
-GET /api/user/{id}/bookmarks - ユーザーのブックマーク一覧
-PUT /api/user/{id} - プロフィール更新（言語情報を含む）
+GET /api/v1/user/{id} - ユーザー情報取得
+GET /api/v1/user/{id}/photos - ユーザーの写真一覧
+GET /api/v1/user/{id}/words - ユーザーの言葉一覧
+GET /api/v1/user/{id}/experiences - ユーザーの体験一覧
+GET /api/v1/user/{id}/likes - ユーザーのいいね一覧
+GET /api/v1/user/{id}/bookmarks - ユーザーのブックマーク一覧
+PUT /api/v1/user/{id} - プロフィール更新（言語情報を含む）
 ```
 
 ## API リクエスト/レスポンス構造例
 
 ### ユーザー登録
 
-**リクエスト**
+**フロントエンド API リクエスト**
 
 ```json
 POST /api/auth/register
+{
+  "username": "tanaka_jp",
+  "password": "securepassword123",
+  "is_japanese": true,
+  "native_language": "japanese",
+  "japanese_level": "native",
+  "english_level": "intermediate"
+}
+```
+
+**バックエンド API リクエスト（BFF から）**
+
+```json
+POST /api/v1/auth/register
 {
   "username": "tanaka_jp",
   "password": "securepassword123",
@@ -197,10 +245,19 @@ POST /api/auth/register
 
 ### コメント投稿
 
-**リクエスト**
+**フロントエンド API リクエスト**
 
 ```json
 POST /api/photos/1/comments
+{
+  "content": "素晴らしい写真ですね！"
+}
+```
+
+**バックエンド API リクエスト（BFF から）**
+
+```json
+POST /api/v1/photos/1/comments
 {
   "content": "素晴らしい写真ですね！"
 }
@@ -223,185 +280,115 @@ POST /api/photos/1/comments
 }
 ```
 
-### いいね追加（Generic Foreign Key 使用）
+### ダッシュボード情報取得（BFF の利点を示す例）
 
-**リクエスト**
+**フロントエンド API リクエスト**
 
-```json
-POST /api/likes
-{
-  "content_type": "photo",
-  "object_id": 1
-}
+```
+GET /api/user/me/dashboard
 ```
 
-**レスポンス**
+**フロントエンド API レスポンス**
 
 ```json
 {
-  "id": 1,
   "user": {
     "id": 1,
-    "username": "tanaka_jp"
+    "username": "tanaka_jp",
+    "profile_image": "https://example.com/images/profile/1.jpg"
   },
-  "content_type": "photo",
-  "object_id": 1,
-  "created_at": "2023-06-01T14:23:45Z",
-  "updated_at": "2023-06-01T14:23:45Z"
-}
-```
-
-### ブックマーク追加（Generic Foreign Key 使用）
-
-**リクエスト**
-
-```json
-POST /api/bookmarks
-{
-  "content_type": "experience",
-  "object_id": 2
-}
-```
-
-**レスポンス**
-
-```json
-{
-  "id": 1,
-  "user": {
-    "id": 1,
-    "username": "tanaka_jp"
+  "stats": {
+    "photos_count": 12,
+    "words_count": 5,
+    "experiences_count": 3,
+    "likes_received": 45,
+    "bookmarks_received": 8
   },
-  "content_type": "experience",
-  "object_id": 2,
-  "created_at": "2023-06-01T15:10:22Z",
-  "updated_at": "2023-06-01T15:10:22Z"
-}
-```
-
-### 通知一覧取得
-
-**リクエスト**
-
-```
-GET /api/notifications?status=unread&limit=10&offset=0
-```
-
-**レスポンス**
-
-```json
-{
-  "count": 25,
-  "next": "/api/notifications?status=unread&limit=10&offset=10",
-  "previous": null,
-  "results": [
+  "recent_photos": [
     {
-      "id": 1,
-      "recipient": {
-        "id": 1,
-        "username": "tanaka_jp"
-      },
-      "actor": {
-        "id": 2,
-        "username": "smith_en"
-      },
-      "action_type": "like",
-      "content_type": "photo",
-      "object_id": 5,
-      "message": "smith_enさんがあなたの写真にいいねしました",
-      "status": "unread",
-      "group_id": "photo_5_likes",
-      "link": "/photos/5",
-      "metadata": {
-        "photo_title": "東京の夜景"
-      },
-      "created_at": "2023-06-02T09:15:30Z",
-      "updated_at": "2023-06-02T09:15:30Z"
+      "id": 23,
+      "title": "東京の夜景",
+      "image_url": "https://example.com/images/photos/23.jpg",
+      "likes_count": 15
+    }
+    // 他の写真...
+  ],
+  "recent_notifications": [
+    {
+      "id": 5,
+      "message": "山田さんがあなたの写真にいいねしました",
+      "created_at": "2023-06-05T09:23:11Z"
     }
     // 他の通知...
   ]
 }
 ```
 
-### 通知作成（システム通知用）
+**バックエンドでの実装（BFF 内部で複数の API 呼び出し）**
 
-**リクエスト**
+```typescript
+// BFF内のRoute Handler実装例
+async function GET(request: Request) {
+  // 認証トークン取得
+  const token = getAuthToken(request);
 
-```json
-POST /api/notifications
-{
-  "recipient_id": 1,
-  "action_type": "system",
-  "message": "システムメンテナンスのお知らせ",
-  "link": "/announcements/maintenance",
-  "metadata": {
-    "maintenance_date": "2023-06-10T22:00:00Z",
-    "duration": "2時間"
-  }
+  // 並列でバックエンドAPIを呼び出し
+  const [
+    userResponse,
+    photosResponse,
+    wordsResponse,
+    experiencesResponse,
+    notificationsResponse,
+  ] = await Promise.all([
+    fetch("/api/v1/auth/user", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/v1/user/me/photos?limit=5", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/v1/user/me/words?limit=5", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/v1/user/me/experiences?limit=5", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/v1/notifications?limit=5&status=unread", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  ]);
+
+  // 各レスポンスをJSON化
+  const [user, photos, words, experiences, notifications] = await Promise.all([
+    userResponse.json(),
+    photosResponse.json(),
+    wordsResponse.json(),
+    experiencesResponse.json(),
+    notificationsResponse.json(),
+  ]);
+
+  // 統合レスポンスを作成
+  return Response.json({
+    user: {
+      id: user.id,
+      username: user.username,
+      profile_image: user.profile_image,
+    },
+    stats: {
+      photos_count: photos.total,
+      words_count: words.total,
+      experiences_count: experiences.total,
+      likes_received: user.likes_received,
+      bookmarks_received: user.bookmarks_received,
+    },
+    recent_photos: photos.items.map(formatPhoto),
+    recent_words: words.items.map(formatWord),
+    recent_experiences: experiences.items.map(formatExperience),
+    recent_notifications: notifications.results.map(formatNotification),
+  });
 }
 ```
 
-**レスポンス**
-
-```json
-{
-  "id": 10,
-  "recipient": {
-    "id": 1,
-    "username": "tanaka_jp"
-  },
-  "actor": null,
-  "action_type": "system",
-  "content_type": null,
-  "object_id": null,
-  "message": "システムメンテナンスのお知らせ",
-  "status": "unread",
-  "group_id": null,
-  "link": "/announcements/maintenance",
-  "metadata": {
-    "maintenance_date": "2023-06-10T22:00:00Z",
-    "duration": "2時間"
-  },
-  "created_at": "2023-06-05T10:30:00Z",
-  "updated_at": "2023-06-05T10:30:00Z"
-}
-```
-
-### 通知を既読に
-
-**リクエスト**
-
-```
-PUT /api/notifications/1/read
-```
-
-**レスポンス**
-
-```json
-{
-  "id": 1,
-  "status": "read",
-  "updated_at": "2023-06-02T10:45:22Z"
-}
-```
-
-### すべての通知を既読に
-
-**リクエスト**
-
-```
-PUT /api/notifications/read-all
-```
-
-**レスポンス**
-
-```json
-{
-  "message": "すべての通知を既読にしました",
-  "count": 15,
-  "updated_at": "2023-06-02T11:30:45Z"
-}
-```
+このように、BFF パターンを使用することで、フロントエンドの要件に最適化された効率的な API を提供できます。
 
 ## OpenAPI 3.0 仕様
 
@@ -415,7 +402,7 @@ API の詳細な仕様は、OpenAPI 3.0 フォーマットで`docs/api/openapi.y
 
 ### Swagger UI による閲覧
 
-Django REST Framework の設定により、API ドキュメントは以下の URL で閲覧できます：
+Django REST Framework の設定により、バックエンド API ドキュメントは以下の URL で閲覧できます：
 
 - 開発環境: `http://localhost:8000/api/docs/`
 - 本番環境: `https://api.thisisjapan.example.com/api/docs/`
@@ -426,8 +413,9 @@ OpenAPI 仕様は以下のような用途に活用できます：
 
 1. **API 仕様の視覚的な確認**：Swagger UI で各エンドポイントの詳細を確認
 2. **クライアントコードの自動生成**：OpenAPI Generator 等のツールを使用
-3. **テストの自動化**：Postman などのツールでコレクションをインポート
-4. **API 仕様の文書化**：開発者間での仕様共有
+3. **TypeScript 型の自動生成**：openapi-typescript を使用してフロントエンド用の型定義を生成
+4. **テストの自動化**：Postman などのツールでコレクションをインポート
+5. **API 仕様の文書化**：開発者間での仕様共有
 
 ### Generic Foreign Key の実装
 

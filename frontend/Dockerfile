@@ -6,6 +6,9 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 
+# Tailwind CSSと関連パッケージを明示的にインストール
+RUN npm install -D tailwindcss@3.4.1 postcss@8.4.35 autoprefixer@10.4.18
+
 # フロントエンドのソースコードをコピー
 COPY frontend/ .
 

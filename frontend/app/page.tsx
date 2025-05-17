@@ -1,103 +1,134 @@
-import Image from "next/image";
+import React from 'react';
+import Hero from '@/components/shared/Hero';
+import SectionTitle from '@/components/shared/SectionTitle';
+import PhotoGrid from '@/components/photos/PhotoGrid';
+import WordGrid from '@/components/words/WordGrid';
+import ExperienceGrid from '@/components/experiences/ExperienceGrid';
+
+// モックデータ（実際にはAPIから取得する）
+const mockPhotos = [
+  {
+    id: 1,
+    title: '富士山の夜明け',
+    imageUrl: 'https://source.unsplash.com/random/800x600/?fuji,japan',
+    author: '山田太郎',
+    location: '山梨県',
+    likes: 120
+  },
+  {
+    id: 2,
+    title: '京都の紅葉',
+    imageUrl: 'https://source.unsplash.com/random/800x600/?kyoto,autumn',
+    author: '佐藤花子',
+    location: '京都府',
+    likes: 98
+  },
+  {
+    id: 3,
+    title: '東京の夜景',
+    imageUrl: 'https://source.unsplash.com/random/800x600/?tokyo,night',
+    author: '鈴木一郎',
+    location: '東京都',
+    likes: 145
+  }
+];
+
+const mockWords = [
+  {
+    id: 1,
+    original: '侘び寂び',
+    furigana: 'わびさび',
+    translation: 'Wabi-Sabi',
+    description: '質素で簡素な美しさと、年月を経て生まれる風情を重んじる日本の美的概念。',
+    author: '田中教授',
+    likes: 78
+  },
+  {
+    id: 2,
+    original: '木漏れ日',
+    furigana: 'こもれび',
+    translation: 'Sunlight filtering through trees',
+    description: '樹木の葉の間から漏れる太陽の光。自然の美しさを表す言葉。',
+    author: '山本翻訳家',
+    likes: 65
+  },
+  {
+    id: 3,
+    original: '一期一会',
+    furigana: 'いちごいちえ',
+    translation: 'Once-in-a-lifetime encounter',
+    description: '人との出会いを大切にし、それが二度とないものとして接するという茶道の精神。',
+    author: '小林茶道家',
+    likes: 92
+  }
+];
+
+const mockExperiences = [
+  {
+    id: 1,
+    title: '茶道体験',
+    imageUrl: 'https://source.unsplash.com/random/800x600/?tea,ceremony',
+    location: '京都市',
+    description: '伝統的な茶室で本格的な茶道を体験できます。お茶の立て方から和菓子の楽しみ方まで。',
+    price: '¥5,000〜',
+    author: '茶道家 高橋',
+    likes: 56
+  },
+  {
+    id: 2,
+    title: '寿司作り教室',
+    imageUrl: 'https://source.unsplash.com/random/800x600/?sushi,cooking',
+    location: '東京都築地',
+    description: 'プロの寿司職人から寿司の握り方を学べる体験。自分で作った寿司をその場で味わえます。',
+    price: '¥8,000〜',
+    author: '寿司職人 大山',
+    likes: 89
+  },
+  {
+    id: 3,
+    title: '着物レンタル・散策',
+    imageUrl: 'https://source.unsplash.com/random/800x600/?kimono,japan',
+    location: '浅草',
+    description: '着物を着て浅草の街を散策できます。記念撮影スポットもご案内します。',
+    price: '¥4,500〜',
+    author: '和装専門家 中村',
+    likes: 112
+  }
+];
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <>
+      <Hero />
+      
+      <div className="container mx-auto px-4 md:px-8 py-12">
+        <SectionTitle
+          title="日本の魅力を写真で"
+          subtitle="全国から集まった美しい風景や文化を写真でお楽しみください"
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <PhotoGrid photos={mockPhotos} className="mb-16" />
+        
+        <SectionTitle
+          title="日本の言葉"
+          subtitle="他の言語では表現しきれない日本独自の言葉をご紹介します"
+        />
+        <WordGrid words={mockWords} className="mb-16" />
+        
+        <SectionTitle
+          title="文化体験"
+          subtitle="日本の伝統文化や日常を体験できるアクティビティ"
+        />
+        <ExperienceGrid experiences={mockExperiences} className="mb-16" />
+        
+        <div className="bg-indigo-50 p-6 rounded-md text-center mb-12">
+          <h3 className="font-serif text-xl font-bold mb-3">This is Japan コミュニティに参加しませんか？</h3>
+          <p className="text-gray-700 mb-4">写真の投稿、言葉の共有、体験の紹介、他のユーザーとの交流ができます。</p>
+          <div className="flex justify-center gap-4">
+            <a href="/auth/register" className="jp-button jp-button-primary">ユーザー登録</a>
+            <a href="/auth/login" className="jp-button jp-button-accent">ログイン</a>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </>
   );
 }
