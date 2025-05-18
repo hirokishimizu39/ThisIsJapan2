@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-// 環境変数からバックエンドAPIのURLを取得
-const API_URL = process.env.BACKEND_API_URL || 'http://localhost:8000/api/v1';
+// Docker環境ではbackendコンテナ名を使用し、その他の環境ではNEXT_PUBLIC_API_URLを使用
+const API_URL = process.env.BACKEND_API_URL || 'http://backend:8000/api/v1';
 
 /**
  * 特定の写真の詳細を取得するGETエンドポイント

@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 # API v1のURLパターン
 api_v1_patterns = [
     path('photos/', include('apps.photos.urls')),
+    path('auth/', include('apps.authentication.urls')),
     # 他のアプリのURLパターンもここに追加していく
 ]
 
