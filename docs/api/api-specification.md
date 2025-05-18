@@ -68,6 +68,7 @@
 POST /api/auth/register - ユーザー登録
 POST /api/auth/login - ログイン
 POST /api/auth/logout - ログアウト
+POST /api/auth/refresh - リフレッシュトークンによる更新
 GET /api/auth/me - 現在のユーザー情報取得
 
 # 写真関連
