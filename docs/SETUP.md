@@ -22,17 +22,13 @@ cd ThisIsJapan2
 ### 2. 環境変数の設定
 
 バックエンド用の環境変数ファイルを作成します。
+[環境変数の設定方法](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/environment_variables.md)
 
-```bash
-cp backend/.env.example backend/.env
-```
-
-必要に応じて`.env`ファイルを編集してください。基本的にはデフォルト設定で開発を始めることができます。
 
 ### 3. Docker コンテナのビルドと起動
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 これにより、以下のサービスが起動します：
@@ -46,13 +42,13 @@ docker-compose up --build
 新しいターミナルを開いて、以下のコマンドを実行します：
 
 ```bash
-docker-compose exec backend python manage.py migrate
+docker compose exec backend python3 manage.py migrate
 ```
 
 ### 5. 開発用管理者アカウントの作成（オプション）
 
 ```bash
-docker-compose exec backend python manage.py createsuperuser
+docker compose exec backend python3 manage.py createsuperuser
 ```
 
 指示に従って、管理者ユーザーを作成してください。
@@ -75,8 +71,8 @@ docker-compose exec backend python manage.py createsuperuser
 バックエンドのコードを変更した場合、Django 開発サーバーは自動的に変更を検知します。ただし、モデルの変更を行った場合は、マイグレーションを作成して適用する必要があります：
 
 ```bash
-docker-compose exec backend python manage.py makemigrations
-docker-compose exec backend python manage.py migrate
+docker compose exec backend python3 manage.py makemigrations
+docker compose exec backend python manage.py migrate
 ```
 
 ### 依存関係の追加
@@ -86,21 +82,21 @@ docker-compose exec backend python manage.py migrate
 `backend/requirements.txt`に依存関係を追加し、コンテナを再ビルドします：
 
 ```bash
-docker-compose build backend
-docker-compose up -d
+docker compose build backend
+docker compose up -d
 ```
 
 #### フロントエンド（Node.js）
 
 ```bash
-docker-compose exec frontend npm install パッケージ名
+docker compose exec frontend npm install パッケージ名
 ```
 
 または、`frontend/package.json`に依存関係を追加し、コンテナを再ビルドします：
 
 ```bash
-docker-compose build frontend
-docker-compose up -d
+docker compose build frontend
+docker compose up -d
 ```
 
 ## テスト実行
@@ -108,13 +104,13 @@ docker-compose up -d
 ### バックエンドテスト
 
 ```bash
-docker-compose exec backend python manage.py test
+docker compose exec backend python3 manage.py test
 ```
 
 ### フロントエンドテスト
 
 ```bash
-docker-compose exec frontend npm test
+docker compose exec frontend npm test
 ```
 
 ## 開発環境の停止
@@ -122,13 +118,13 @@ docker-compose exec frontend npm test
 開発作業を終了する場合は、以下のコマンドでコンテナを停止できます：
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 データベースのデータを完全に削除してコンテナを停止する場合は：
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ## トラブルシューティング
@@ -142,7 +138,7 @@ docker-compose down -v
 依存関係のインストールに問題がある場合は、キャッシュをクリアしてみてください：
 
 ```bash
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ### データベース接続エラー
@@ -150,10 +146,9 @@ docker-compose build --no-cache
 データベースへの接続に問題がある場合は、データベースコンテナが正常に起動しているか確認してください：
 
 ```bash
-docker-compose logs db
+docker compose logs db
 ```
 
 ## 補足情報
 
-- 環境変数のカスタマイズについては、`backend/.env.example`と`docker-compose.yml`ファイルを参照してください。
 - 本番環境へのデプロイ手順については、[デプロイメントガイド](deployment/deployment-guide.md)を参照してください。
