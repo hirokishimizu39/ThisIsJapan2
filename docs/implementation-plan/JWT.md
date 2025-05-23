@@ -1,11 +1,15 @@
-
+参照：https://qiita.com/Ajyarimochi/items/c6274c4aa8f21f573265
 
 # JWTによる認証機能の実装
 
-1. JWTの実装：`simplejwt`導入
-2. JWT認証APIエンドポイント作成
-3. CORSの設定
-4. Next.jsでのトークン取得と管理（login, logout, refresh）
+1. JWTの実装：`simplejwt`パッケージのインストール
+2. settings.pyにJWT認証の設定を追加
+3. urls.pyにJWT認証APIエンドポイント作成
+4. curlコマンドでJWTのアクセストークンを取得
+5. curlコマンドでGET、POST、PUT、DELETEのリクエストをそれぞれ投げて動作確認
+6. CORSの設定
+7. Next.jsでのトークン取得と管理（login, logout, refresh）
+
 
 ---
 
