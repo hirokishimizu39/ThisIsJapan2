@@ -52,7 +52,7 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
 2. **バックエンド (AWS ECS Fargate)**
 
-   - Django REST Framework(Python3.12, Django==5.2, djangorestframework==3.16.0, django-cors-headers==4.7.0, djangorestframework-simplejwt==5.3.1)
+   - Django REST Framework(Python3.12, Django5.2, djangorestframework3.16.0, django-cors-headers4.7.0, djangorestframework-simplejwt5.3.1)
    - API バージョニング（v1→v2...）
    - JWT 認証([https://jpadilla.github.io/django-rest-framework-jwt/)](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/))
    - CORS 設定(https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file)
