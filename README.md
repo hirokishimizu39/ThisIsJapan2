@@ -1,6 +1,12 @@
-# This is Japan - プロジェクトサマリー
+# はじめに
+- 本リポジトリは、以下の技術を学習するために作成したアプリ(This is Japan)のソースになります
+  - Dockerによる環境構築
+  - React(Next.js App Router)
+  - バックエンドAPI開発(Django, RESTful API, OpenAPI仕様, Swagger)
+  - AWS ECS, Fargate へのデプロイ
+  - 今後導入したい（Gihub Actions, TerraformによるIaC,CI/CDの実現）
 
-## プロジェクト概要
+## This is Japan プロジェクト概要
 
 日本の文化や体験を世界に発信するためのプラットフォーム。写真共有、日本語・文化の解説、体験の共有を通じて、日本の魅力を世界に伝えることを目指します。
 
@@ -267,26 +273,6 @@ dev/
 - [API リソース設計書](docs/api/api-specification.md)
 - [デプロイメントガイド](docs/deployment/deployment-guide.md)
 
-## TailwindCSS セットアップ手順
-
-TailwindCSS と関連パッケージは Docker イメージのビルド時に自動的にインストールされます。チームメンバーが環境を構築する場合は、以下のコマンドを実行してください：
-
-```bash
-# コンテナをビルドし直して再起動する
-docker compose build --no-cache frontend
-docker compose up -d
-```
-
-これにより、以下のパッケージが自動的にインストールされます：
-
-- tailwindcss@3.4.1
-- postcss@8.4.35
-- autoprefixer@10.4.18
-
-設定ファイルは以下のディレクトリにあります：
-
-- `frontend/tailwind.config.js`
-- `frontend/postcss.config.js`
 
 ---
 - 日本人について
