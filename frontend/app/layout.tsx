@@ -4,6 +4,7 @@ import { Inter, Noto_Sans_JP, Noto_Serif_JP } from 'next/font/google';
 import Navbar from '../components/shared/Navbar';
 import Footer from '../components/shared/Footer';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { headers } from 'next/headers';
 
 // フォント設定
 const inter = Inter({ 
@@ -31,15 +32,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const headersList = headers();
+  const pathname = headersList.get('x-pathname') || '';
+  const isAuthPage = pathname.startsWith('/auth');
+
   return (
     <html lang="ja" className={`${inter.variable} ${notoSans.variable} ${notoSerif.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
-          <Navbar />
+          {!isAuthPage && <Navbar />}
           <main className="flex-grow">
             {children}
           </main>
-          <Footer />
+          {!isAuthPage && <Footer />}
         </AuthProvider>
       </body>
     </html>
