@@ -123,9 +123,8 @@ export default function Home() {
         <div className="bg-indigo-50 p-6 rounded-md text-center mb-12">
           <h3 className="font-serif text-xl font-bold mb-3">This is Japan コミュニティに参加しませんか？</h3>
           <p className="text-gray-700 mb-4">写真の投稿、言葉の共有、体験の紹介、他のユーザーとの交流ができます。</p>
-          <div className="flex justify-center gap-4">
-            <a href="/auth/register" className="jp-button jp-button-primary">ユーザー登録</a>
-            <a href="/auth/login" className="jp-button jp-button-accent">ログイン</a>
+          <div className="flex justify-center">
+            <a href="/auth" className="jp-button jp-button-primary">ログイン・新規登録</a>
           </div>
         </div>
       </div>

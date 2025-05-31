@@ -120,18 +120,11 @@ const Navbar = () => {
                 )}
               </li>
             ) : (
-              <>
-                <li className="mb-2 md:mb-0">
-                  <Link href="/auth/login" className="jp-button-ghost px-4 py-1 border border-indigo-200 rounded">
-                    ログイン
-                  </Link>
-                </li>
-                <li className="mb-2 md:mb-0 ml-2">
-                  <Link href="/auth/register" className="jp-button-accent">
-                    新規登録
-                  </Link>
-                </li>
-              </>
+              <li className="mb-2 md:mb-0">
+                <Link href="/auth" className="jp-button jp-button-primary px-4 py-2 rounded-md">
+                  ログイン
+                </Link>
+              </li>
             )}
           </ul>
         </nav>
