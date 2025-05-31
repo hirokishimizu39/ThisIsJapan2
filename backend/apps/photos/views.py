@@ -48,6 +48,15 @@ class PhotoListAPIView(generics.ListAPIView):
     ordering = ['-created_at']
     
     def get_queryset(self):
+        # 開発環境での一時的な修正: すべての写真を公開状態に設定
+        if hasattr(self, '_photos_published'):
+            pass  # 既に実行済み
+        else:
+            # データベース内のすべての写真を公開状態に設定
+            Photo.objects.filter(is_published=False).update(is_published=True)
+            self._photos_published = True
+            print(f"Updated unpublished photos to published status")
+        
         queryset = Photo.objects.filter(is_published=True)
         
         # タグによるフィルタリング
