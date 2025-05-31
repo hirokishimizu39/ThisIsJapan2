@@ -1,5 +1,5 @@
 # はじめに
-- 本リポジトリは、以下の技術を学習するために作成したアプリ(This is Japan)のソースになります
+- 本リポジトリは、以下の技術を学習するために作成したアプリ(This is Japan)です。
   - Dockerによる環境構築
   - React(Next.js App Router)
   - バックエンドAPI開発(Django, RESTful API, OpenAPI仕様, Swagger)
