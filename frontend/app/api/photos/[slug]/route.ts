@@ -45,7 +45,87 @@ export async function GET(
       cache: 'no-store',
     });
     
-    // エラーの場合
+    // エラーの場合、フォールバック処理を試行
+    if (!response.ok && response.status === 404) {
+      console.log('写真が見つかりません。フォールバック処理を実行します:', slug);
+      
+      // 全ての写真を取得してslugマッチングを試行
+      try {
+        const allPhotosResponse = await fetch(`${API_ENDPOINT}/photos/`, {
+          method: 'GET',
+          headers,
+          cache: 'no-store',
+        });
+        
+        if (allPhotosResponse.ok) {
+          const allPhotosData = await allPhotosResponse.json();
+          
+          // slugが付与されない場合があるので処理
+          // フロントエンドで生成されたslugとマッチする写真を探す
+          const matchedPhoto = allPhotosData.results?.find((photo: any) => {
+            // 空のslugを持つ写真に対してslugを生成して比較
+            if (!photo.slug || photo.slug.trim() === '') {
+              const generateSlug = (title: string) => {
+                return title
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-')
+                  .trim('-');
+              };
+              
+              const uniqueSuffix = photo.id.split('-').pop()?.slice(-4) || '';
+              const generatedSlug = generateSlug(photo.title) + '-' + uniqueSuffix;
+              
+              return generatedSlug === slug;
+            }
+            return photo.slug === slug;
+          });
+          
+          if (matchedPhoto) {
+            console.log('フォールバック処理で写真が見つかりました:', matchedPhoto.title);
+            
+            // 画像URLを処理
+            if (matchedPhoto.image) {
+              if (matchedPhoto.image.includes('backend:8000')) {
+                matchedPhoto.image = matchedPhoto.image.replace('http://backend:8000', BROWSER_ACCESSIBLE_API_URL);
+              } else if (!matchedPhoto.image.startsWith('http')) {
+                const imagePath = matchedPhoto.image.startsWith('/') ? matchedPhoto.image : `/${matchedPhoto.image}`;
+                matchedPhoto.image = `${BROWSER_ACCESSIBLE_API_URL}${imagePath}`;
+              }
+            }
+            
+            // slugを更新
+            if (!matchedPhoto.slug || matchedPhoto.slug.trim() === '') {
+              const generateSlug = (title: string) => {
+                return title
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-')
+                  .trim('-');
+              };
+              
+              const uniqueSuffix = matchedPhoto.id.split('-').pop()?.slice(-4) || '';
+              matchedPhoto.slug = generateSlug(matchedPhoto.title) + '-' + uniqueSuffix;
+            }
+            
+            return NextResponse.json(matchedPhoto);
+          }
+        }
+      } catch (fallbackError) {
+        console.error('フォールバック処理でエラーが発生しました:', fallbackError);
+      }
+      
+      // フォールバック処理でも見つからない場合
+      console.error('Error response from backend:', response.status, response.statusText);
+      return NextResponse.json(
+        { error: 'Photo not found' },
+        { status: response.status }
+      );
+    }
+    
+    // 成功した場合の処理は既存のまま
     if (!response.ok) {
       console.error('Error response from backend:', response.status, response.statusText);
       return NextResponse.json(

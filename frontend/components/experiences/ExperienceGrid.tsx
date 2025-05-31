@@ -28,9 +28,9 @@ const ExperienceGrid: React.FC<ExperienceGridProps> = ({ experiences, className 
 
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
-      {experiences.map((experience) => (
+      {experiences.map((experience, index) => (
         <ExperienceCard
-          key={experience.id}
+          key={`experience-${experience.id}-${index}`}
           id={experience.id}
           title={experience.title}
           imageUrl={experience.imageUrl}

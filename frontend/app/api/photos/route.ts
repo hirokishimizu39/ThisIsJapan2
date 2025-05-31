@@ -123,6 +123,27 @@ export async function GET(request: NextRequest) {
             console.log(`Converted image_url backend URL to: ${photo.image_url}`);
           }
         }
+        
+        // slugが空の場合のフォールバック処理
+        if (!photo.slug || photo.slug.trim() === '') {
+          console.log('空のslugが見つかりました。タイトルから生成します:', photo.title);
+          
+          // タイトルからslugを生成
+          const generateSlug = (title: string) => {
+            return title
+              .toLowerCase()
+              .replace(/[^\w\s-]/g, '') // 特殊文字を削除
+              .replace(/\s+/g, '-') // スペースをハイフンに変換
+              .replace(/-+/g, '-') // 連続するハイフンを1つに
+              .trim('-'); // 前後のハイフンを削除
+          };
+          
+          // IDの最後の4文字を使用してユニークにする
+          const uniqueSuffix = photo.id.split('-').pop().slice(-4) || Math.random().toString(36).slice(-4);
+          photo.slug = generateSlug(photo.title) + '-' + uniqueSuffix;
+          console.log('生成されたslug:', photo.slug);
+        }
+        
         return photo;
       });
     }
@@ -198,6 +219,24 @@ export async function POST(request: NextRequest) {
     // 画像URLを処理して、ブラウザからアクセス可能なURLに変換
     if (data && data.image && data.image.startsWith('/media')) {
       data.image = `${BROWSER_ACCESSIBLE_API_URL}${data.image}`;
+    }
+    
+    // slugが空の場合のフォールバック処理
+    if (data && (!data.slug || data.slug.trim() === '')) {
+      console.log('Slugが空です。タイトルから生成します:', data.title);
+      
+      // タイトルからslugを生成
+      const generateSlug = (title: string) => {
+        return title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // 特殊文字を削除
+          .replace(/\s+/g, '-') // スペースをハイフンに変換
+          .replace(/-+/g, '-') // 連続するハイフンを1つに
+          .trim('-'); // 前後のハイフンを削除
+      };
+      
+      data.slug = generateSlug(data.title) + '-' + Date.now();
+      console.log('生成されたslug:', data.slug);
     }
     
     // レスポンスを返却

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
+:root {
     /* 洗練された日本的カラーパレット */
     --background: 0 0% 98%;
     --foreground: 215 25% 27%;
