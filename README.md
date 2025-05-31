@@ -5,8 +5,7 @@
   - バックエンド
     - API開発(Django, RESTful API, OpenAPI仕様, Swagger)
   - インフラ
-    - Docker, AWS ECS, Fargate
-  - 今後導入したい（Gihub Actions, TerraformによるIaC,CI/CDの実現）
+    - Docker, AWS ECS, Fargate（導入予定：Gihub Actions, TerraformによるIaC,CI/CDの実現）
 
 ## This is Japan プロジェクト概要
 
