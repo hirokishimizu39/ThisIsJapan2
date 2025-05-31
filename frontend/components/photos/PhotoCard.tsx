@@ -1,9 +1,12 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 interface PhotoCardProps {
   id: number;
+  slug: string;
   title: string;
   imageUrl: string;
   author: string;
@@ -14,6 +17,7 @@ interface PhotoCardProps {
 
 const PhotoCard: React.FC<PhotoCardProps> = ({
   id,
+  slug,
   title,
   imageUrl,
   author,
@@ -21,19 +25,40 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
   likes = 0,
   className = '',
 }) => {
+  // 画像URLが有効かどうかを確認
+  const isValidImageUrl = Boolean(imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/')));
+  
+  // フォールバック画像
+  const fallbackImageUrl = '/images/placeholder-image.svg';
+  
+  // 使用する画像URL
+  const finalImageUrl = isValidImageUrl ? imageUrl : fallbackImageUrl;
+  
   return (
     <div className={`jp-card ${className}`}>
-      <Link href={`/photos/${id}`} className="block relative aspect-[4/3] overflow-hidden">
-        <Image
-          src={imageUrl}
-          alt={title}
-          fill
-          className="object-cover transition-transform hover:scale-105"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+      <Link href={`/photos/${slug}`} className="block relative aspect-[4/3] overflow-hidden">
+        <div className="relative w-full h-full">
+          {finalImageUrl ? (
+            <Image
+              src={finalImageUrl}
+              alt={title}
+              fill
+              className="object-cover transition-transform hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = fallbackImageUrl;
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+              <span className="text-gray-400">No image</span>
+            </div>
+          )}
+        </div>
       </Link>
       <div className="p-4">
-        <Link href={`/photos/${id}`} className="hover:text-indigo-700">
+        <Link href={`/photos/${slug}`} className="hover:text-indigo-700">
           <h3 className="font-serif font-medium text-lg mb-1 truncate">{title}</h3>
         </Link>
         <div className="flex justify-between items-center text-sm text-gray-600">

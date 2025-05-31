@@ -1,0 +1,35 @@
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A5568;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2D3748;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 空 -->
+  <rect width="100%" height="100%" fill="url(#skyGradient)"/>
+  
+  <!-- 富士山のシルエット -->
+  <polygon points="600,200 400,400 800,400" fill="url(#mountainGradient)"/>
+  <polygon points="600,200 450,350 750,350" fill="#E2E8F0" opacity="0.3"/>
+  
+  <!-- 雲 -->
+  <ellipse cx="200" cy="150" rx="60" ry="20" fill="white" opacity="0.8"/>
+  <ellipse cx="220" cy="140" rx="40" ry="15" fill="white" opacity="0.8"/>
+  <ellipse cx="1000" cy="180" rx="80" ry="25" fill="white" opacity="0.6"/>
+  
+  <!-- 太陽 -->
+  <circle cx="900" cy="120" r="40" fill="#FED7D7" opacity="0.8"/>
+  
+  <!-- タイトル -->
+  <text x="600" y="500" font-family="serif" font-size="48" fill="#2D3748" text-anchor="middle" font-weight="bold">
+    This Is Japan
+  </text>
+  <text x="600" y="540" font-family="sans-serif" font-size="18" fill="#4A5568" text-anchor="middle">
+    日本の美しい風景を発見しよう
+  </text>
+</svg> 

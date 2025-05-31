@@ -282,8 +282,27 @@ docker compose up -d
 - tailwindcss@3.4.1
 - postcss@8.4.35
 - autoprefixer@10.4.18
+- @tailwindcss/postcss@4.1.7 (2025-05-18 追加)
 
 設定ファイルは以下のディレクトリにあります：
 
 - `frontend/tailwind.config.js`
-- `frontend/postcss.config.js`
+- `frontend/postcss.config.js` (2025-05-18 更新: `tailwindcss` → `@tailwindcss/postcss`)
+
+### 2025-05-18 TailwindCSS PostCSS プラグインの更新
+
+TailwindCSS の最新バージョンでは、PostCSS プラグインが別のパッケージに移動しました。これに伴い、以下の変更を行いました：
+
+1. `@tailwindcss/postcss` パッケージの追加
+2. `postcss.config.js` の設定を更新
+   ```js
+   module.exports = {
+     plugins: {
+       "@tailwindcss/postcss": {}, // 'tailwindcss' から変更
+       autoprefixer: {},
+     },
+   };
+   ```
+3. `frontend/Dockerfile` を更新して `@tailwindcss/postcss` をインストール
+
+詳細な変更内容については、 `frontend/README.md` を参照してください。

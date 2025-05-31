@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Hero: React.FC = () => {
   return (
@@ -7,10 +8,13 @@ const Hero: React.FC = () => {
       {/* 背景画像 */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/90 to-indigo-900/70"></div>
-        <img
-          src="/images/hero-japan.jpg"
+        <Image
+          src="/images/hero-japan.svg"
           alt="日本の風景"
-          className="w-full h-full object-cover"
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
         />
       </div>
 

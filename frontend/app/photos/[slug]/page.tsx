@@ -5,9 +5,14 @@ import { PhotoDetail } from '@/lib/api/types/photo';
 import { notFound } from 'next/navigation';
 
 // 写真詳細を取得するサーバーコンポーネント関数
-async function getPhotoDetail(id: string): Promise<PhotoDetail> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/photos/${id}`, {
-    cache: 'no-store'
+async function getPhotoDetail(slug: string): Promise<PhotoDetail> {
+  // サーバーサイドのリクエストはNext.jsのAPIルートを経由してバックエンドにアクセス
+  const origin = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000';
+  const res = await fetch(`${origin}/api/photos/${slug}`, {
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/json',
+    }
   });
   
   if (!res.ok) {
@@ -29,9 +34,12 @@ function formatDate(dateString: string): string {
   });
 }
 
-export default async function PhotoDetailPage({ params }: { params: { id: string } }) {
+export default async function PhotoDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  // paramsを非同期で解決
+  const { slug } = await params;
+  
   // 写真の詳細情報を取得
-  const photo = await getPhotoDetail(params.id).catch(error => {
+  const photo = await getPhotoDetail(slug).catch(error => {
     console.error('Error loading photo details:', error);
     return null;
   });
@@ -40,6 +48,12 @@ export default async function PhotoDetailPage({ params }: { params: { id: string
   if (!photo) {
     notFound();
   }
+
+  // バックエンドのベースURLを取得（フロントエンドからアクセス可能なURL）
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http://backend:8000', 'http://localhost:8000') || 'http://localhost:8000';
+  
+  // 画像URLの修正
+  const imageUrl = photo.image?.startsWith('http') ? photo.image : `${backendUrl}${photo.image || ''}`;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -55,7 +69,7 @@ export default async function PhotoDetailPage({ params }: { params: { id: string
         <div className="lg:col-span-8">
           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100">
             <Image
-              src={photo.image}
+              src={imageUrl}
               alt={photo.title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"

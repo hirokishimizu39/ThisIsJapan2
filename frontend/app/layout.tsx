@@ -1,5 +1,4 @@
-"use client";
-
+import React from 'react';
 import './globals.css';
 import { Inter, Noto_Sans_JP, Noto_Serif_JP } from 'next/font/google';
 import Navbar from '../components/shared/Navbar';

@@ -2,21 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 // Docker環境ではbackendコンテナ名を使用し、その他の環境ではNEXT_PUBLIC_API_URLを使用
-const API_URL = process.env.BACKEND_API_URL || 'http://backend:8000/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000';
+const API_ENDPOINT = `${API_URL}/api/v1`;
+
+// ブラウザからアクセス可能なバックエンドURL
+const BROWSER_ACCESSIBLE_API_URL = 'http://localhost:8000';
 
 /**
  * 特定の写真の詳細を取得するGETエンドポイント
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     // 写真のスラグを取得
-    const { id } = params;
+    const { slug } = await context.params;
     
     // バックエンドAPIのエンドポイント
-    const endpoint = `${API_URL}/photos/${id}/`;
+    const endpoint = `${API_ENDPOINT}/photos/${slug}/`;
+    
+    console.log('Fetching photo detail from backend endpoint:', endpoint);
     
     // 認証トークンを取得（もしあれば）
     const cookieStore = await cookies();
@@ -41,6 +47,7 @@ export async function GET(
     
     // エラーの場合
     if (!response.ok) {
+      console.error('Error response from backend:', response.status, response.statusText);
       return NextResponse.json(
         { error: 'Photo not found' },
         { status: response.status }
@@ -50,10 +57,48 @@ export async function GET(
     // レスポンスのJSONを取得
     const data = await response.json();
     
+    console.log('Backend photo detail response:', JSON.stringify(data).substring(0, 500) + '...');
+    
+    // 写真の詳細情報をログ出力
+    if (data && data.image) {
+      console.log('Photo image details:', {
+        image: data.image,
+        imageType: typeof data.image,
+        startsWithSlash: data.image.startsWith('/'),
+        startsWithMedia: data.image.startsWith('/media'),
+        startsWithHttp: data.image.startsWith('http'),
+      });
+    }
+    
+    // 画像URLを処理して、ブラウザからアクセス可能なURLに変換
+    if (data && data.image) {
+      // 元のイメージURLをログ出力
+      console.log(`Processing detail image URL: ${data.image}`);
+      
+      // backend:8000をlocalhost:8000に変換
+      if (data.image.includes('backend:8000')) {
+        data.image = data.image.replace('http://backend:8000', BROWSER_ACCESSIBLE_API_URL);
+        console.log(`Converted backend URL to: ${data.image}`);
+      }
+      // 絶対URLでなければ、ブラウザからアクセス可能なURLに変換
+      else if (!data.image.startsWith('http')) {
+        // スラッシュで始まっていない場合は追加
+        const imagePath = data.image.startsWith('/') ? data.image : `/${data.image}`;
+        data.image = `${BROWSER_ACCESSIBLE_API_URL}${imagePath}`;
+        console.log(`Converted relative path to: ${data.image}`);
+      }
+      
+      // image_urlフィールドも同様に処理
+      if (data.image_url && data.image_url.includes('backend:8000')) {
+        data.image_url = data.image_url.replace('http://backend:8000', BROWSER_ACCESSIBLE_API_URL);
+        console.log(`Converted image_url backend URL to: ${data.image_url}`);
+      }
+    }
+    
     // レスポンスを返却
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching photo:', error);
+    console.error('Error fetching photo details:', error);
     return NextResponse.json(
       { error: 'Failed to fetch photo' },
       { status: 500 }
@@ -66,11 +111,11 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     // 写真のスラグを取得
-    const { id } = params;
+    const { slug } = await context.params;
     
     // 認証トークンを取得
     const cookieStore = await cookies();
@@ -91,7 +136,7 @@ export async function PUT(
     const formData = await request.formData();
     
     // バックエンドAPIのエンドポイント
-    const endpoint = `${API_URL}/photos/${id}/update/`;
+    const endpoint = `${API_ENDPOINT}/photos/${slug}/update/`;
     
     // バックエンドAPIを呼び出し
     const response = await fetch(endpoint, {
@@ -115,6 +160,11 @@ export async function PUT(
     // レスポンスのJSONを取得
     const data = await response.json();
     
+    // 画像URLを処理して、ブラウザからアクセス可能なURLに変換
+    if (data && data.image && data.image.startsWith('/media')) {
+      data.image = `${BROWSER_ACCESSIBLE_API_URL}${data.image}`;
+    }
+    
     // レスポンスを返却
     return NextResponse.json(data);
   } catch (error) {
@@ -131,11 +181,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     // 写真のスラグを取得
-    const { id } = params;
+    const { slug } = await context.params;
     
     // 認証トークンを取得
     const cookieStore = await cookies();
@@ -153,7 +203,7 @@ export async function DELETE(
     */
     
     // バックエンドAPIのエンドポイント
-    const endpoint = `${API_URL}/photos/${id}/delete/`;
+    const endpoint = `${API_ENDPOINT}/photos/${slug}/delete/`;
     
     // バックエンドAPIを呼び出し
     const response = await fetch(endpoint, {

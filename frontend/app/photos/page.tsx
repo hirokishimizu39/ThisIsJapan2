@@ -5,8 +5,13 @@ import { PhotoListResponse } from '@/lib/api/types/photo';
 
 // API経由で写真データを取得する関数
 async function getPhotos(): Promise<PhotoListResponse> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/photos`, {
-    cache: 'no-store'
+  // Next.jsのAPIルートを経由してバックエンドにアクセス
+  const origin = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000';
+  const res = await fetch(`${origin}/api/photos`, {
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/json',
+    }
   });
   
   if (!res.ok) {
@@ -23,15 +28,44 @@ export default async function PhotosPage() {
     return { results: [], count: 0, next: null, previous: null } as PhotoListResponse;
   });
   
+  // バックエンドのベースURLを取得（フロントエンドからアクセス可能なURL）
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http://backend:8000', 'http://localhost:8000') || 'http://localhost:8000';
+  
   // UIに合わせたデータ形式に変換
-  const photos = photosData.results.map(photo => ({
-    id: Number(photo.id),
-    title: photo.title,
-    imageUrl: photo.image,
-    author: photo.user.username,
-    location: photo.location_name || '',
-    likes: 0, // 本来はAPIから取得するデータ
-  }));
+  const photos = photosData.results.map(photo => {
+    // 画像URLの優先順位: image_url > image > フォールバック
+    let imageUrl = '/images/placeholder-image.svg'; // フォールバック画像
+    
+    if (photo.image_url) {
+      // image_urlがある場合はそれを優先
+      imageUrl = photo.image_url;
+    } else if (photo.image) {
+      // imageフィールドがある場合
+      if (photo.image.startsWith('http')) {
+        // 絶対URLの場合はそのまま使用
+        imageUrl = photo.image;
+      } else {
+        // 相対パスの場合はバックエンドURLと組み合わせる
+        const imagePath = photo.image.startsWith('/') ? photo.image : `/${photo.image}`;
+        imageUrl = `${backendUrl}${imagePath}`;
+      }
+    }
+    
+    return {
+      id: Number(photo.id) || Math.floor(Math.random() * 1000), // IDがない場合は乱数を設定
+      slug: photo.slug, // slugを追加
+      title: photo.title,
+      imageUrl: imageUrl,
+      author: photo.user?.username || 'ゲスト',
+      location: photo.location_name || '',
+      likes: 0, // 本来はAPIから取得するデータ
+    };
+  });
+
+  console.log(`変換後の写真データ: ${photos.length}件`);
+  if (photos.length > 0) {
+    console.log('最初の写真:', JSON.stringify(photos[0]));
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

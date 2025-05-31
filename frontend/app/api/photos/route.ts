@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-// Docker環境ではbackendコンテナ名を使用し、その他の環境ではNEXT_PUBLIC_API_URLを使用
-const API_URL = process.env.BACKEND_API_URL || 'http://backend:8000/api/v1';
+// サーバーサイドでは docker compose のサービス名を使用
+const getApiUrl = () => {
+  // Docker環境でのサーバーサイドリクエスト用
+  return process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000';
+};
+
+const API_URL = getApiUrl();
+const API_ENDPOINT = `${API_URL}/api/v1`;
+
+// ブラウザからアクセス可能なバックエンドURL
+const BROWSER_ACCESSIBLE_API_URL = 'http://localhost:8000';
 
 /**
  * 写真一覧を取得するGETエンドポイント
@@ -14,7 +23,9 @@ export async function GET(request: NextRequest) {
     const queryString = searchParams.toString();
     
     // バックエンドAPIのエンドポイント
-    const endpoint = `${API_URL}/photos/${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `${API_ENDPOINT}/photos/${queryString ? `?${queryString}` : ''}`;
+    
+    console.log('Fetching from backend endpoint:', endpoint);
     
     // 認証トークンを取得（もしあれば）
     const cookieStore = await cookies();
@@ -39,6 +50,82 @@ export async function GET(request: NextRequest) {
     
     // レスポンスのJSONを取得
     const data = await response.json();
+    
+    // より詳細なログを追加
+    console.log('Backend response data:', JSON.stringify(data).substring(0, 500) + '...');
+    
+    // 詳細なログを追加（写真が存在するかの確認）
+    if (data.count === 0) {
+      console.log('バックエンドから返された写真はありません。管理画面から写真を追加してください。');
+    }
+    
+    // レスポンスに結果がある場合は、最初の写真の詳細をログ出力
+    if (data && data.results && data.results.length > 0) {
+      const firstPhoto = data.results[0];
+      console.log('First photo details:', {
+        id: firstPhoto.id,
+        title: firstPhoto.title,
+        image: firstPhoto.image,
+        imageType: typeof firstPhoto.image,
+        startsWithSlash: firstPhoto.image?.startsWith('/'),
+        startsWithMedia: firstPhoto.image?.startsWith('/media'),
+      });
+    } else {
+      console.log('No photos returned from backend');
+      
+      // 写真が空の場合、ダミーデータを生成する（デバッグ用）
+      if (process.env.NODE_ENV === 'development') {
+        console.log('開発環境で実行中: ダミーデータを使用します');
+        data.count = 1;
+        data.results = [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            title: 'テスト写真',
+            description: 'これはテスト用のダミー写真です',
+            image: '/photos/2025/05/18/photos.png',
+            user: {
+              id: 1,
+              username: 'テストユーザー'
+            },
+            location_name: '東京',
+            created_at: new Date().toISOString(),
+            slug: 'test-photo',
+            views_count: 0
+          }
+        ];
+        console.log('ダミーデータを生成しました:', JSON.stringify(data.results));
+      }
+    }
+    
+    // 画像のURLを処理して、ブラウザからアクセス可能なURLに変換
+    if (data && data.results && Array.isArray(data.results)) {
+      data.results = data.results.map((photo: any) => {
+        if (photo.image) {
+          // 元のイメージURLをログ出力
+          console.log(`Processing image URL: ${photo.image}`);
+          
+          // backend:8000をlocalhost:8000に変換
+          if (photo.image.includes('backend:8000')) {
+            photo.image = photo.image.replace('http://backend:8000', BROWSER_ACCESSIBLE_API_URL);
+            console.log(`Converted backend URL to: ${photo.image}`);
+          }
+          // 絶対URLでなければ、ブラウザからアクセス可能なURLに変換
+          else if (!photo.image.startsWith('http')) {
+            // スラッシュで始まっていない場合は追加
+            const imagePath = photo.image.startsWith('/') ? photo.image : `/${photo.image}`;
+            photo.image = `${BROWSER_ACCESSIBLE_API_URL}${imagePath}`;
+            console.log(`Converted relative path to: ${photo.image}`);
+          }
+          
+          // image_urlフィールドも同様に処理
+          if (photo.image_url && photo.image_url.includes('backend:8000')) {
+            photo.image_url = photo.image_url.replace('http://backend:8000', BROWSER_ACCESSIBLE_API_URL);
+            console.log(`Converted image_url backend URL to: ${photo.image_url}`);
+          }
+        }
+        return photo;
+      });
+    }
     
     // レスポンスを返却
     return NextResponse.json(data, { status: response.status });
@@ -75,7 +162,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     
     // バックエンドAPIのエンドポイント
-    const endpoint = `${API_URL}/photos/create/`;
+    const endpoint = `${API_ENDPOINT}/photos/create/`;
     
     // テスト用：バックエンドAPIへの呼び出しをスキップし、成功レスポンスを返す
     if (!authToken) {
@@ -107,6 +194,11 @@ export async function POST(request: NextRequest) {
     
     // レスポンスのJSONを取得
     const data = await response.json();
+    
+    // 画像URLを処理して、ブラウザからアクセス可能なURLに変換
+    if (data && data.image && data.image.startsWith('/media')) {
+      data.image = `${BROWSER_ACCESSIBLE_API_URL}${data.image}`;
+    }
     
     // レスポンスを返却
     return NextResponse.json(data, { status: response.status });
