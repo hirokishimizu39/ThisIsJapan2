@@ -29,12 +29,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, description })
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/90 via-indigo-900/80 to-indigo-900/70"></div>
         </div>
         
-        <div className="absolute top-8 left-8 z-10">
-          <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-white drop-shadow-lg">This is Japan</span>
-          </Link>
-        </div>
-        
         <div className="max-w-md text-center relative z-10">
           <h1 className="text-4xl font-bold mb-6 drop-shadow-lg">{title}</h1>
           <p className="text-lg mb-8 drop-shadow-md">{description}</p>
