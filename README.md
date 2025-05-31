@@ -1,9 +1,11 @@
 # はじめに
 - 本リポジトリは、以下の技術を学習するために作成したアプリ(This is Japan)です。
-  - Dockerによる環境構築
-  - React(Next.js App Router)
-  - バックエンドAPI開発(Django, RESTful API, OpenAPI仕様, Swagger)
-  - AWS ECS, Fargate へのデプロイ
+  - フロント
+    - React(Next.js App Router)
+  - バックエンド
+    - API開発(Django, RESTful API, OpenAPI仕様, Swagger)
+  - インフラ
+    - Docker, AWS ECS, Fargate, Vercel
   - 今後導入したい（Gihub Actions, TerraformによるIaC,CI/CDの実現）
 
 ## This is Japan プロジェクト概要
