@@ -3,7 +3,7 @@
 - **フロントエンド**
   - **React**での宣言型プログラミングによるコンポーネント指向UIの実装
   - React+**TypeScript**による型安全かつ再利用性の高いUIの実現
-  - **Next.js**でのSSRやSSGの使い分けによるパフォーマンス最適化とSEO強化
+  - **Next.js**でのCSR,SSR,SSGの使い分けによるパフォーマンス最適化とSEO強化
 
 - **バックエンド**
   - Django(Python)でのRESTful **API開発**(OpenAPI仕様準拠)
