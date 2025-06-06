@@ -19,9 +19,9 @@
 
 これらの技術を組み合わせ、TypeScriptを軸としたフロント〜バックエンド、データベース設計、Dockerを活用したインフラ構築まで、フルスタックで開発・運用できるスキルセットを証明します。
 
-    
+---
 
-## This is Japan プロジェクト概要
+# This is Japan プロジェクト概要
 
 日本の文化や体験を世界に発信するためのプラットフォーム。写真共有、日本語・文化の解説、体験の共有を通じて、日本の魅力を世界に伝えることを目指します。
 
@@ -64,7 +64,7 @@
 - ユーザー別の投稿管理
 - マイページでのいいね・ブックマーク管理
 
-## 独自アルゴリズム（フェーズ 3）
+### 独自アルゴリズム（フェーズ 3）
 
 - 地域分散アルゴリズム
   - 写真・文化体験は地方であるほど優位になるようにする
@@ -75,7 +75,7 @@
     - 未定
 
 
-
+# ドキュメント一覧
 - [ファイル構造](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/architecture/file-structure.md)
 - [システムアーキテクチャ](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/architecture/system-architecture.md)
 - [技術スタック詳細](docs/architecture/technology-stack.md)
