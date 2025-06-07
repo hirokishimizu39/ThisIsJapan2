@@ -91,6 +91,8 @@
 - [開発参加ガイド](docs/CONTRIBUTING.md)
 - [デザイン要件](https://github.com/hirokishimizu39/ThisIsJapan2/blob/feature/photo/docs/design/design.md)
 - [デプロイメントガイド](docs/deployment/deployment-guide.md)
+- [デザイン](docs/design/design.md))
+
 
 
 ---

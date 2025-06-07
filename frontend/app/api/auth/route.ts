@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 現在のユーザー情報を取得
-export async function GET(request: NextRequest) {
+// ユーザー情報取得処理
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;

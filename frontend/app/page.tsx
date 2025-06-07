@@ -5,12 +5,12 @@ import PhotoGrid from '@/components/photos/PhotoGrid';
 import WordGrid from '@/components/words/WordGrid';
 import ExperienceGrid from '@/components/experiences/ExperienceGrid';
 
-// モックデータ（実際にはAPIから取得する）
+// モックデータ（実際にはAPIから人気の写真、言葉、体験を取得する）
 const mockPhotos = [
   {
     id: 1,
     title: '富士山の夜明け',
-    imageUrl: 'https://source.unsplash.com/random/800x600/?fuji,japan',
+    imageUrl: '/images/placeholder-image.svg',
     author: '山田太郎',
     location: '山梨県',
     likes: 120
@@ -18,7 +18,7 @@ const mockPhotos = [
   {
     id: 2,
     title: '京都の紅葉',
-    imageUrl: 'https://source.unsplash.com/random/800x600/?kyoto,autumn',
+    imageUrl: '/images/placeholder-image.svg',
     author: '佐藤花子',
     location: '京都府',
     likes: 98
@@ -26,7 +26,7 @@ const mockPhotos = [
   {
     id: 3,
     title: '東京の夜景',
-    imageUrl: 'https://source.unsplash.com/random/800x600/?tokyo,night',
+    imageUrl: '/images/placeholder-image.svg',
     author: '鈴木一郎',
     location: '東京都',
     likes: 145
@@ -67,7 +67,7 @@ const mockExperiences = [
   {
     id: 1,
     title: '茶道体験',
-    imageUrl: 'https://source.unsplash.com/random/800x600/?tea,ceremony',
+    imageUrl: '/images/placeholder-image.svg',
     location: '京都市',
     description: '伝統的な茶室で本格的な茶道を体験できます。お茶の立て方から和菓子の楽しみ方まで。',
     price: '¥5,000〜',
@@ -77,7 +77,7 @@ const mockExperiences = [
   {
     id: 2,
     title: '寿司作り教室',
-    imageUrl: 'https://source.unsplash.com/random/800x600/?sushi,cooking',
+    imageUrl: '/images/placeholder-image.svg',
     location: '東京都築地',
     description: 'プロの寿司職人から寿司の握り方を学べる体験。自分で作った寿司をその場で味わえます。',
     price: '¥8,000〜',
@@ -87,7 +87,7 @@ const mockExperiences = [
   {
     id: 3,
     title: '着物レンタル・散策',
-    imageUrl: 'https://source.unsplash.com/random/800x600/?kimono,japan',
+    imageUrl: '/images/placeholder-image.svg',
     location: '浅草',
     description: '着物を着て浅草の街を散策できます。記念撮影スポットもご案内します。',
     price: '¥4,500〜',
@@ -123,9 +123,8 @@ export default function Home() {
         <div className="bg-indigo-50 p-6 rounded-md text-center mb-12">
           <h3 className="font-serif text-xl font-bold mb-3">This is Japan コミュニティに参加しませんか？</h3>
           <p className="text-gray-700 mb-4">写真の投稿、言葉の共有、体験の紹介、他のユーザーとの交流ができます。</p>
-          <div className="flex justify-center gap-4">
-            <a href="/auth/register" className="jp-button jp-button-primary">ユーザー登録</a>
-            <a href="/auth/login" className="jp-button jp-button-accent">ログイン</a>
+          <div className="flex justify-center">
+            <a href="/auth" className="jp-button jp-button-primary">ログイン・新規登録</a>
           </div>
         </div>
       </div>

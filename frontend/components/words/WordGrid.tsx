@@ -27,9 +27,9 @@ const WordGrid: React.FC<WordGridProps> = ({ words, className = '' }) => {
 
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
-      {words.map((word) => (
+      {words.map((word, index) => (
         <WordCard
-          key={word.id}
+          key={`word-${word.id}-${index}`}
           id={word.id}
           original={word.original}
           furigana={word.furigana}

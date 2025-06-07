@@ -3,6 +3,7 @@ import PhotoCard from './PhotoCard';
 
 interface Photo {
   id: number;
+  slug: string;
   title: string;
   imageUrl: string;
   author: string;
@@ -26,10 +27,11 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, className = '' }) => {
 
   return (
     <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
-      {photos.map((photo) => (
+      {photos.map((photo, index) => (
         <PhotoCard
-          key={photo.id}
+          key={`photo-${photo.id}-${index}`}
           id={photo.id}
+          slug={photo.slug}
           title={photo.title}
           imageUrl={photo.imageUrl}
           author={photo.author}

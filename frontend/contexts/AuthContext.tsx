@@ -171,8 +171,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error(errorData.error || '登録に失敗しました');
       }
       
-      // 登録成功後、ログインページへリダイレクト
-      router.push('/auth/login?registered=true');
+      // 登録成功後、自動的にログインを実行
+      try {
+        await login(registerData.email, registerData.password);
+        // login 関数内でホームページへのリダイレクトが行われる
+      } catch (loginError) {
+        console.error('Auto-login failed after registration:', loginError);
+        // 自動ログインに失敗した場合は認証ページに送る
+        router.push('/auth?registered=true');
+      }
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -268,7 +275,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
   
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push('/auth/login');
+      router.push('/auth');
     }
   }, [isAuthenticated, loading, router]);
   

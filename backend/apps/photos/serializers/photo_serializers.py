@@ -38,13 +38,26 @@ class PhotoSerializer(serializers.ModelSerializer):
     写真一覧用のシリアライザ
     """
     user = UserSerializer(read_only=True)
+    image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Photo
         fields = [
-            'id', 'title', 'description', 'image', 'user',
+            'id', 'title', 'description', 'image', 'image_url', 'user',
             'location_name', 'created_at', 'slug', 'views_count'
         ]
+    
+    def get_image_url(self, obj):
+        """
+        画像の完全なURLを生成
+        """
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            # リクエストコンテキストが利用できない場合の対応
+            return f"/media/{obj.image}"
+        return None
 
 
 class PhotoDetailSerializer(serializers.ModelSerializer):
@@ -54,14 +67,27 @@ class PhotoDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Photo
         fields = [
-            'id', 'title', 'description', 'image', 'user',
+            'id', 'title', 'description', 'image', 'image_url', 'user',
             'category', 'tags', 'location_name', 'latitude', 'longitude',
             'created_at', 'updated_at', 'slug', 'is_published', 'views_count'
         ]
+    
+    def get_image_url(self, obj):
+        """
+        画像の完全なURLを生成
+        """
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            # リクエストコンテキストが利用できない場合の対応
+            return f"/media/{obj.image}"
+        return None
 
 
 class PhotoCreateSerializer(serializers.ModelSerializer):

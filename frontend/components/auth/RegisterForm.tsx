@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -18,9 +17,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     password: '',
     confirmPassword: '',
     is_japanese: false,
-    native_language: 'japanese', // デフォルト値
-    japanese_level: 'none', // デフォルト値
-    english_level: 'none', // デフォルト値
+    native_language: 'japanese',
+    japanese_level: 'none',
+    english_level: 'none',
   });
   
   // UI状態
@@ -31,7 +30,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // チェックボックスの場合
     if (type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement;
       setFormData(prev => ({
@@ -50,7 +48,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // バリデーション
     if (!formData.username || !formData.email || !formData.password) {
       setError('すべての必須項目を入力してください');
       return;
@@ -65,7 +62,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       setIsLoading(true);
       setError(null);
       
-      // リクエストボディを作成
       const requestBody = {
         username: formData.username,
         email: formData.email,
@@ -77,12 +73,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         english_level: formData.english_level,
       };
       
-      // デバッグ用にリクエストボディを出力
-      console.log('送信データ:', requestBody);
-      console.log('password_confirm の値:', formData.confirmPassword);
-      console.log('password_confirm の型:', typeof formData.confirmPassword);
-      
-      // 登録APIを呼び出す
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -93,19 +83,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       
       const data = await response.json();
       
-      // デバッグ用にレスポンスを出力
-      console.log('レスポンス:', data);
-      
       if (!response.ok) {
         throw new Error(data.error || '登録に失敗しました');
       }
       
-      // 成功時の処理
       if (onSuccess) {
         onSuccess();
       } else {
-        // ログインページにリダイレクト
-        router.push('/auth/login?registered=true');
+        router.push('/auth?registered=true');
       }
     } catch (err) {
       console.error('登録エラー:', err);
@@ -116,19 +101,21 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   };
   
   return (
-    <div className="w-full max-w-md">
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-bold mb-6 text-center">アカウント登録</h2>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        
-        {/* ユーザー名 */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+    <div className="jp-card bg-white p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">アカウントを作成</h2>
+        <p className="text-gray-600">コミュニティに参加して体験を共有しましょう</p>
+      </div>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="username">
             ユーザー名 <span className="text-red-500">*</span>
           </label>
           <input
@@ -137,15 +124,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             type="text"
             value={formData.username}
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="ユーザー名"
             required
+            disabled={isLoading}
           />
         </div>
         
-        {/* メールアドレス */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
             メールアドレス <span className="text-red-500">*</span>
           </label>
           <input
@@ -154,15 +141,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             type="email"
             value={formData.email}
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="example@mail.com"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="example@email.com"
             required
+            disabled={isLoading}
           />
         </div>
         
-        {/* パスワード */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="password">
             パスワード <span className="text-red-500">*</span>
           </label>
           <input
@@ -171,16 +158,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             type="password"
             value={formData.password}
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="パスワード（8文字以上）"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="8文字以上のパスワード"
             minLength={8}
             required
+            disabled={isLoading}
           />
         </div>
         
-        {/* パスワード確認 */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmPassword">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="confirmPassword">
             パスワード（確認用） <span className="text-red-500">*</span>
           </label>
           <input
@@ -189,108 +176,46 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             type="password"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="パスワード（確認用）"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="パスワードをもう一度入力"
             minLength={8}
             required
+            disabled={isLoading}
           />
         </div>
         
-        {/* 日本人かどうか */}
-        <div className="mb-4">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              name="is_japanese"
-              checked={formData.is_japanese}
-              onChange={handleChange}
-              className="mr-2"
-            />
-            <span className="text-gray-700 text-sm">日本人です</span>
-          </label>
-        </div>
-        
-        {/* 母国語 */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="native_language">
-            母国語
-          </label>
-          <select
-            id="native_language"
-            name="native_language"
-            value={formData.native_language}
+        <div className="flex items-start space-x-3 py-2">
+          <input
+            id="is_japanese"
+            name="is_japanese"
+            type="checkbox"
+            checked={formData.is_japanese}
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          >
-            <option value="japanese">日本語</option>
-            <option value="english">英語</option>
-            <option value="chinese">中国語</option>
-            <option value="korean">韓国語</option>
-            <option value="french">フランス語</option>
-            <option value="german">ドイツ語</option>
-            <option value="spanish">スペイン語</option>
-            <option value="other">その他</option>
-          </select>
-        </div>
-        
-        {/* 日本語レベル */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="japanese_level">
-            日本語レベル
-          </label>
-          <select
-            id="japanese_level"
-            name="japanese_level"
-            value={formData.japanese_level}
-            onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          >
-            <option value="none">学習経験なし</option>
-            <option value="beginner">少しわかる（初心者レベル）</option>
-            <option value="daily">日常会話レベル</option>
-            <option value="business">ビジネスレベル</option>
-            <option value="native">ネイティブレベル</option>
-          </select>
-        </div>
-        
-        {/* 英語レベル */}
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="english_level">
-            英語レベル
-          </label>
-          <select
-            id="english_level"
-            name="english_level"
-            value={formData.english_level}
-            onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          >
-            <option value="none">学習経験なし</option>
-            <option value="beginner">少しわかる（初心者レベル）</option>
-            <option value="daily">日常会話レベル</option>
-            <option value="business">ビジネスレベル</option>
-            <option value="native">ネイティブレベル</option>
-          </select>
-        </div>
-        
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="submit"
+            className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             disabled={isLoading}
-            className="jp-button-primary w-full"
-          >
-            {isLoading ? '登録中...' : '登録する'}
-          </button>
+          />
+          <label htmlFor="is_japanese" className="text-sm text-gray-700">
+            私は日本人です
+          </label>
         </div>
         
-        <div className="text-center text-sm">
-          <p className="text-gray-600">
-            すでにアカウントをお持ちの場合は
-            <Link href="/auth/login" className="text-blue-500 hover:text-blue-700 ml-1">
-              ログイン
-            </Link>
-          </p>
-        </div>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full jp-button jp-button-primary flex items-center justify-center"
+        >
+          {isLoading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              アカウント作成中...
+            </>
+          ) : (
+            'アカウント作成'
+          )}
+        </button>
       </form>
     </div>
   );
