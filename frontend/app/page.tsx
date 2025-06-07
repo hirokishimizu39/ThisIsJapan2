@@ -5,7 +5,7 @@ import PhotoGrid from '@/components/photos/PhotoGrid';
 import WordGrid from '@/components/words/WordGrid';
 import ExperienceGrid from '@/components/experiences/ExperienceGrid';
 
-// モックデータ（実際にはAPIから取得する）
+// モックデータ（実際にはAPIから人気の写真、言葉、体験を取得する）
 const mockPhotos = [
   {
     id: 1,

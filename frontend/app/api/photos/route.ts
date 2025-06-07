@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     
     console.log('Fetching from backend endpoint:', endpoint);
     
-    // 認証トークンを取得（もしあれば）
+    // 認証トークンを取得
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;
     
