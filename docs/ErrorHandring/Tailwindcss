@@ -1,0 +1,7 @@
+# Error: Cannot find module '../lightningcss.linux-arm64-gnu.node'
+
+原因：
+- おそらく、dockerコンテナのnodo_moduleが問題
+
+
+https://laboratory.kiyono-co.jp/2564/docker/
