@@ -38,7 +38,7 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 - DRF は純粋な業務 API（例: `/api/v1/photos/`）として、ロジックと DB 処理に集中
 - 認証トークン（JWT やセッション）は Route Handlers 経由で DRF に伝達
 - 表示順、翻訳、多言語対応などは Route Handlers 側で担当
-- 型共有には openapi-typescript 等で共通型管理を検討
+- 型共有には openapi-typescript 等で共通型管理（フェーズ2以降）
 
 ### コンポーネント詳細
 
@@ -52,15 +52,15 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
 2. **バックエンド (AWS ECS Fargate)**
 
-   - Django REST Framework
-   - API バージョニング（v1 など）
-   - JWT 認証
-   - CORS 設定
-   - カスタム認証ミドルウェア
+   - Django REST Framework(Python3.12, Django5.2, djangorestframework3.16.0, django-cors-headers4.7.0, djangorestframework-simplejwt5.3.1)
+   - API バージョニング（v1→v2...）
+   - JWT 認証([https://jpadilla.github.io/django-rest-framework-jwt/)](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/))
+   - CORS 設定(https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file)
+   - カスタム認証ミドルウェア（フェーズ2以降）
 
 3. **データベース (AWS RDS)**
 
-   - PostgreSQL 15.x
+   - PostgreSQL 14
    - Connection Pooling
    - 自動バックアップ
 
@@ -77,19 +77,19 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
 ### バックエンド API (Django REST Framework)
 
-- RESTful API 設計原則に従った実装
-- OpenAPI 3.0 仕様に準拠したドキュメント
+- RESTful API 設計原則に従った実装(https://learn.microsoft.com/ja-jp/azure/architecture/best-practices/api-design)
+- OpenAPI 3.0 仕様に準拠したドキュメント(https://swagger.io/docs/specification/v3_0/about/)
 - バージョニング導入 (`/api/v1/`)
 - ビジネスロジックとデータ処理に集中
 - JWT 認証によるセキュリティ確保
 
 ### フロントエンド API (Next.js Route Handlers)
 
-- UI 要件に特化したエンドポイント設計
+- Reactによる宣言型プログラミング、コンポーネント指向UIの実装
 - バックエンド API の呼び出しとデータ整形
-- 認証トークンの管理と伝達
-- パフォーマンス最適化（キャッシュ、バッチ処理）
-- エラーハンドリングとユーザーフレンドリーなレスポンス
+- JWT(認証トークン)の管理と伝達
+- Next.jsのパフォーマンス最適化（レンダリング戦略(CSR,SSR,ISR,SSGの使い分け)、キャッシュ）
+- エラーハンドリング
 
 ## セキュリティ設計
 
@@ -102,7 +102,7 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
    - HTTPS による通信暗号化
 
 2. **権限管理**
-   - ロールベースアクセス制御
+   - IAMロールベースアクセス制御
    - API エンドポイントごとの権限チェック
 
 ### データ保護
@@ -128,8 +128,7 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
    - レスポンシブ対応
 
 2. **キャッシュ戦略**
-   - SWR によるクライアントサイドキャッシュ
-   - Stale-While-Revalidate
+   - SWR(Stale-While-Revalidate) によるクライアントサイドキャッシュ
    - CDN キャッシュ
    - Route Handlers でのデータ集約（複数 API の呼び出しを最適化）
 
@@ -137,14 +136,14 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
 1. **データベース**
 
-   - インデックス最適化
-   - クエリキャッシュ
-   - N+1 問題の解決
+   - インデックス最適化(B-treeアルゴリズム)
+   - クエリキャッシュ()
+   - N+1 問題の解決()
 
 2. **API 応答**
-   - ページネーション
-   - 部分的レスポンス
-   - 圧縮
+   - ページネーション()
+   - 部分的レスポンス()
+   - 圧縮()
 
 ## スケーラビリティ
 
