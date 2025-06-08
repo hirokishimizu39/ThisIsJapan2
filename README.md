@@ -84,6 +84,7 @@
 # ドキュメント一覧
 - [ファイル構造](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/architecture/file-structure.md)
 - [システムアーキテクチャ](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/architecture/system-architecture.md)
+- [AWS構成図](docs/deployment/aws-architecture.md)
 - [技術スタック詳細](docs/architecture/technology-stack.md)
 - [API リソース設計書](docs/api/api-specification.md)
 - [DB 設計書](docs/database/database-design.md)
