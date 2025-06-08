@@ -33,7 +33,7 @@
 ### KGI：
 - インバウンドの地方分散と消費額の 30%増加
 - 日本人であることに誇りに思うと答える人が9割になる(現状: 7割)
-- 地方の隠れた文化資源の発掘と継承（このアプリ経由で初めて知ったと答える人が50%を超える何かを発掘）
+- 地方の隠れた文化資源の発掘と継承(日本の文化について、「このアプリ経由で初めて知った」と答える方が50%を超える何かを発掘)
 - 参加する日本人ホストの英会話力, 異文化対応スキル向上と地域活性化（このアプリがきっかけで英語を使う仕事に就いたという方が1人以上出る）
 
 ## 完成したらデモ動画を貼る
@@ -91,7 +91,7 @@
 - [開発参加ガイド](docs/CONTRIBUTING.md)
 - [デザイン要件](https://github.com/hirokishimizu39/ThisIsJapan2/blob/feature/photo/docs/design/design.md)
 - [デプロイメントガイド](docs/deployment/deployment-guide.md)
-- [デザイン](docs/design/design.md))
+- [デザイン](docs/design/design.md)
 
 
 
