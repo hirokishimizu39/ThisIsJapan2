@@ -9,7 +9,7 @@ graph TD
     Internet["🌐 インターネット"]
     
     %% Vercel (フロントエンド)
-    Vercel["🚀 Vercel<br/>- Next.js App<br/>- www.thisisjapan.com"]
+    Vercel["🚀 Vercel<br/>- Next.js App<br/>- www\.thisisjapan.com"]
     
     %% CloudFront
     CloudFront["⚡ CloudFront CDN<br/>- 静的ファイル配信<br/>- 画像最適化"]
@@ -64,7 +64,7 @@ graph TD
     %% メインフロー
     User --> Internet
     Internet --> Route53
-    Route53 -->|"www.thisisjapan.com"| Vercel
+    Route53 -->|"www\.thisisjapan.com"| Vercel
     Route53 -->|"api.thisisjapan.com"| ALB
     
     %% CloudFrontフロー
