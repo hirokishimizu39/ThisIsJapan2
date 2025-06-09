@@ -50,18 +50,86 @@ This is Japan は、以下の**シンプルな構成**でデプロイします�
 
 ### 環境変数の準備
 
+#### 1. 開発環境での.env ファイル作成
+
+```bash
+# バックエンド環境変数
+cp backend/env.example backend/.env
+
+# フロントエンド環境変数
+cp frontend/env.example frontend/.env.local
+```
+
+#### 2. 開発環境用の設定値
+
+**backend/.env** (開発用):
+
+```bash
+# Django Settings
+DEBUG=1
+SECRET_KEY=dev_secret_key_for_development_only
+ALLOWED_HOSTS=localhost,127.0.0.1,backend
+
+# Database Configuration
+DATABASE_URL=postgres://postgres:postgres@db:5432/thisisjapan
+
+# AWS Settings (開発環境では無効化)
+AWS_STORAGE_BUCKET_NAME=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=ap-northeast-1
+
+# JWT Settings
+JWT_SECRET=dev_jwt_secret_key_for_development
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+**frontend/.env.local** (開発用):
+
+```bash
+# API URLs
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=dev_nextauth_secret_for_development
+
+# Application Environment
+NODE_ENV=development
+```
+
+#### 3. 本番環境用の値を事前決定
+
 以下の値を事前に決めておいてください：
 
 ```bash
-# アプリケーション設定
+# 本番環境設定値
 DOMAIN_NAME=thisisjapan.com
-DB_PASSWORD=secure_password_123
-SECRET_KEY=django_secret_key_here
-JWT_SECRET=jwt_secret_key_here
+DB_PASSWORD=TIJ_2024@Prod!Ver1  # 12文字以上の強固なパスワード
+SECRET_KEY=django_prod_secret_key_2024_secure  # 50文字以上推奨
+JWT_SECRET=jwt_prod_secret_key_2024_secure
+NEXTAUTH_SECRET=nextauth_prod_secret_2024_secure
 
 # AWS設定
 AWS_REGION=ap-northeast-1
 BUCKET_NAME=thisisjapan-files
+```
+
+#### 4. 環境変数生成ツール
+
+**強固なシークレットキー生成方法**:
+
+```bash
+# Django SECRET_KEY生成
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+# ランダム文字列生成（JWT用など）
+openssl rand -base64 32
+
+# オンラインツール使用
+# https://djecrety.ir/ (Django SECRET_KEY)
 ```
 
 ## 🚀 Phase 1: AWS 基盤構築 (1 日)

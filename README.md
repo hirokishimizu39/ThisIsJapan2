@@ -1,22 +1,27 @@
 # はじめに
+
 本リポジトリでは、以下の技能をアピールいたします。
+
 - **フロントエンド**
-  - **React**での宣言型プログラミングによるコンポーネント指向UIの実装
-  - React+**TypeScript**による型安全かつ再利用性の高いUIの実現
-  - **Next.js**でのCSR,SSR,SSGの使い分けによるパフォーマンス最適化とSEO強化
+
+  - **React**での宣言型プログラミングによるコンポーネント指向 UI の実装
+  - React+**TypeScript**による型安全かつ再利用性の高い UI の実現
+  - **Next.js**での CSR,SSR,SSG の使い分けによるパフォーマンス最適化と SEO 強化
 
 - **バックエンド**
-  - Django(Python)でのRESTful **API開発**(OpenAPI仕様準拠)
-  - TypeScriptクライアントとシームレスに連携可能なエンドポイント設計
+
+  - Django(Python)での RESTful **API 開発**(OpenAPI 仕様準拠)
+  - TypeScript クライアントとシームレスに連携可能なエンドポイント設計
 
 - **DB**
-  - PostgreSQLをORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
+
+  - PostgreSQL を ORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
 
 - **インフラ**
-  - Dockerで開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
-  - AWS ECS＋Fargateを利用したコンテナデプロイにより、スケーラブルなサーバーレス運用を構築
+  - Docker で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
+  - AWS ECS ＋ Fargate を利用したコンテナデプロイにより、スケーラブルなサーバーレス運用を構築
 - （今後実現予定...CI/CD）
-  - GitHub Actions, Terraformを導入し、IaCおよび 自動テスト/静的解析によるCI/CDを強化予定
+  - GitHub Actions, Terraform を導入し、IaC および 自動テスト/静的解析による CI/CD を強化予定
 
 <br>
 
@@ -25,18 +30,22 @@
 # アプリ概要
 
 ### アプリ名：
+
 - This is Japan.🇯🇵
-  
+
 ### Goal：
+
 - 日本の文化や体験を世界に発信するためのプラットフォーム。写真共有、日本語・文化の解説、体験の共有を通じて、日本の魅力を世界に伝える <br>
 
 ### KGI：
+
 - インバウンドの地方分散と消費額の 30%増加
-- 日本人であることに誇りに思うと答える人が9割になる(現状: 7割)
-- 地方の隠れた文化資源の発掘と継承(日本の文化について、「このアプリ経由で初めて知った」と答える方が50%を超える何かを発掘)
-- 参加する日本人ホストの英会話力, 異文化対応スキル向上と地域活性化（このアプリがきっかけで英語を使う仕事に就いたという方が1人以上出る）
+- 日本人であることに誇りに思うと答える人が 9 割になる(現状: 7 割)
+- 地方の隠れた文化資源の発掘と継承(日本の文化について、「このアプリ経由で初めて知った」と答える方が 50%を超える何かを発掘)
+- 参加する日本人ホストの英会話力, 異文化対応スキル向上と地域活性化（このアプリがきっかけで英語を使う仕事に就いたという方が 1 人以上出る）
 
 ## 完成したらデモ動画を貼る
+
 デモ動画
 
 ## 主要機能
@@ -80,11 +89,11 @@
   - 外国人 - 日本人マッチング
     - 未定
 
-
 # ドキュメント一覧
+
 - [ファイル構造](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/architecture/file-structure.md)
 - [システムアーキテクチャ](https://github.com/hirokishimizu39/ThisIsJapan2/blob/main/docs/architecture/system-architecture.md)
-- [AWS構成図](docs/deployment/aws-architecture.md)
+- [AWS 構成図](docs/deployment/aws-architecture.md)
 - [技術スタック詳細](docs/architecture/technology-stack.md)
 - [API リソース設計書](docs/api/api-specification.md)
 - [DB 設計書](docs/database/database-design.md)
@@ -94,9 +103,8 @@
 - [デプロイメントガイド](docs/deployment/deployment-guide.md)
 - [デザイン](docs/design/design.md)
 
-
-
 ---
+
 - 日本人について
   - 武士道
   - 戦後日本　https://youtu.be/q28drkmUSqY?si=ulWCYxBsHZQ79AAY

@@ -4,9 +4,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=thisisjapan
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-thisisjapan}
     ports:
       - "5432:5432"
 
@@ -21,11 +21,13 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    env_file:
+      - backend/.env
     environment:
-      - DEBUG=1
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/thisisjapan
-      - SECRET_KEY=dev_secret_key
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - DEBUG=${DEBUG:-1}
+      - DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@db:5432/thisisjapan}
+      - SECRET_KEY=${SECRET_KEY:-dev_secret_key}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
 
   frontend:
     build:
@@ -37,9 +39,11 @@ services:
       - /app/frontend/node_modules
     ports:
       - "3000:3000"
+    env_file:
+      - frontend/.env.local
     environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NODE_ENV=${NODE_ENV:-development}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
       - WATCHPACK_POLLING=true # ファイル変更を監視するための設定
 
 volumes:
