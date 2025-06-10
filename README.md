@@ -4,13 +4,13 @@
 
 - **フロントエンド**
 
-  - **React**での宣言型プログラミングによるコンポーネント指向 UI の実装
-  - React+**TypeScript**による型安全かつ再利用性の高い UI の実現
-  - **Next.js**での CSR,SSR,SSG の使い分けによるパフォーマンス最適化と SEO 強化
+  - [**React**](https://developer.mozilla.org/ja/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started)での宣言型プログラミングによるコンポーネント指向 UI の実装
+  - React+[**TypeScript**](https://www.typescriptlang.org/docs/handbook/2/basic-types.html)による型安全かつ再利用性の高い UI の実現
+  - [**Next.js**(app router)](https://nextjs.org/learn/dashboard-app)での CSR,SSR,SSG の使い分けによるパフォーマンス最適化と SEO 強化
 
 - **バックエンド**
 
-  - Django(Python)での RESTful **API 開発**(OpenAPI 仕様準拠)
+  - Django(Python)での [REST](https://developer.mozilla.org/ja/docs/Glossary/REST)ful **API 開発**(OpenAPI 仕様準拠)
   - TypeScript クライアントとシームレスに連携可能なエンドポイント設計
 
 - **DB**
