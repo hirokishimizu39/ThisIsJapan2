@@ -40,13 +40,17 @@ This is Japan は、以下の**シンプルな構成**でデプロイします�
 ├── ALB: $16/月
 ├── ECS Fargate: $8/月 (1タスク)
 ├── RDS t3.micro: $13/月
+├── NAT Gateway: $32/月 (基本料金)
+├── NAT Data Processing: $3/月
 ├── S3 + CloudFront: $3/月
 ├── Route53: $0.5/月
 ├── Secrets Manager: $1/月
 └── CloudWatch: $2/月
 ────────────────────────
-合計: 約$43/月 (約6,000円/月)
+合計: 約$78/月 (約11,000円/月)
 ```
+
+**注意**: NAT ゲートウェイが最大のコスト要因ですが、プライベートサブネットの ECS がインターネットアクセスするために必須です。
 
 ## 📋 事前準備
 
@@ -183,7 +187,16 @@ openssl rand -base64 32
    VPCにアタッチ: thisisjapan-vpc
    ```
 
-4. **ルートテーブル設定**
+4. **NAT ゲートウェイ作成**
+
+   ```
+   名前: thisisjapan-nat-gw
+   サブネット: thisisjapan-public-subnet
+   接続タイプ: パブリック
+   Elastic IP: 新規作成(NAT-GW削除時に自動で削除されないため消し忘れ注意)
+   ```
+
+5. **ルートテーブル設定**
 
    **パブリック用:**
 
@@ -197,8 +210,8 @@ openssl rand -base64 32
 
    ```
    名前: thisisjapan-private-rt
+   ルート追加: 0.0.0.0/0 → thisisjapan-nat-gw
    サブネット関連付け: thisisjapan-private-subnet
-   (インターネットアクセス用のNATゲートウェイは後で設定)
    ```
 
 ### 1-2. セキュリティグループ作成
@@ -209,35 +222,89 @@ openssl rand -base64 32
 
    ```
    名前: thisisjapan-alb-sg
-   説明: ALB security group
+   説明: for ALB - allow HTTPS/HTTP from internet
    VPC: thisisjapan-vpc
 
    インバウンドルール:
-   - HTTPS (443) | 0.0.0.0/0
-   - HTTP (80) | 0.0.0.0/0 (HTTPSリダイレクト用)
+   - HTTPS (443) | 0.0.0.0/0 | allow HTTPS from anywhere for production site access
+   - HTTP (80) | 0.0.0.0/0 | redirect HTTP to HTTPS
+
+   アウトバウンドルール:
+   - All traffic | 0.0.0.0/0 | forward to ECS containers and health checks
    ```
+
+   **セキュリティポイント**: インターネットに公開される唯一の入り口。HTTPS 通信で暗号化される。
 
 2. **ECS 用セキュリティグループ**
 
    ```
    名前: thisisjapan-ecs-sg
-   説明: ECS security group
+   説明: for ECS Fargate Container - allow traffic from ALB only
    VPC: thisisjapan-vpc
 
    インバウンドルール:
-   - HTTP (80) | ソース: thisisjapan-alb-sg
+   - HTTP (80) | Source: thisisjapan-alb-sg | allow access from ALB only via Nginx
+   - Note: No direct internet access, ALB traffic only
+
+   アウトバウンドルール:
+   - HTTPS (443) | 0.0.0.0/0 | access to ECR, Secrets Manager, S3
+   - HTTP (80) | 0.0.0.0/0 | for package updates and external API connections
+   - PostgreSQL (5432) | thisisjapan-rds-sg | connect RDS database
    ```
+
+   **セキュリティポイント**: プライベートサブネットに配置、ALB からのみアクセス可能。
 
 3. **RDS 用セキュリティグループ**
 
    ```
    名前: thisisjapan-rds-sg
-   説明: RDS security group
+   説明: PostgreSQL Database - allow DB connections from ECS only
    VPC: thisisjapan-vpc
 
    インバウンドルール:
-   - PostgreSQL (5432) | ソース: thisisjapan-ecs-sg
+   - PostgreSQL (5432) | Source: thisisjapan-ecs-sg | allow DB connections from ECS only
+   - Note: Application server access only, no direct connections
+
+   アウトバウンドルール:
+   - None (disabled by default) | Database requires no external communication
    ```
+
+   **セキュリティポイント**: 最もセキュアな設定。ECS からのみアクセス、外部からは完全に遮断。
+
+### セキュリティグループの階層設計
+
+```
+インターネット → ALB-SG → ECS-SG → RDS-SG
+     ↓           ↓        ↓         ↓
+   全世界      HTTPS/HTTP  HTTP(80)  PostgreSQL
+             からアクセス  ALBのみ   ECSのみ
+```
+
+**重要**: 各層で必要最小限のアクセスのみ許可する「多層防御」の考え方
+
+### セキュリティ強化オプション（MVP 後の改善）
+
+上記の設定にて**動作確認を優先する初期構成**です。本番運用では以下の段階的強化を実施：
+
+**Phase 1: 基本動作確認** (上記設定)
+
+- まずアプリケーションが正常動作することを確認
+
+**Phase 2: アウトバウンドルール厳格化**
+
+```
+ECS-SG アウトバウンドを以下に変更:
+- HTTPS (443) | ECR: 602401143452.dkr.ecr.ap-northeast-1.amazonaws.com | Docker image pull
+- HTTPS (443) | Secrets Manager: secretsmanager.ap-northeast-1.amazonaws.com | Get secrets
+- HTTPS (443) | S3: s3.ap-northeast-1.amazonaws.com | File upload/download
+- PostgreSQL (5432) | RDS-SG | Database connection
+```
+
+**Phase 3: Web ACL 追加** (高度)
+
+- AWS WAF で ALB を保護
+- 地理的制限・レート制限の実装
+
 
 ### 1-3. VPC エンドポイント作成 (S3 用)
 
@@ -944,6 +1011,23 @@ python manage.py collectstatic
    - 起動スクリプトの権限問題
    - Secrets Manager の権限不足
    - 環境変数の設定ミス
+
+### NAT ゲートウェイ関連のトラブル
+
+1. **ECS タスクが ECR からイメージをプルできない**
+
+   - NAT ゲートウェイが正常に動作しているか確認
+   - プライベートサブネットのルートテーブルに 0.0.0.0/0 → NAT-GW が設定されているか確認
+   - Elastic IP が NAT ゲートウェイに関連付けられているか確認
+
+2. **インターネットアクセスが必要な理由**
+   ```
+   ECS タスクが以下にアクセスするため:
+   - ECR (Docker イメージプル)
+   - Secrets Manager (認証情報取得)
+   - PyPI等 (パッケージ更新)
+   - 外部API (必要に応じて)
+   ```
 
 ### 統合コンテナのトラブル
 
