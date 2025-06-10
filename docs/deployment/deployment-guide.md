@@ -6,21 +6,30 @@
 
 This is Japan は、以下の**シンプルな構成**でデプロイします：
 
+### ファイル配信の分離設計
+
+**Vercel**: Next.js アプリケーション + ビルド時静的ファイル  
+**S3 + CloudFront**: ユーザーアップロード画像 + Django 管理画面ファイル
+
 ### 全体構成
 
 ```
-[ユーザー] → [Vercel (Next.js)] → [AWS Route53] → [ALB] → [ECS (1タスク)] → [RDS PostgreSQL]
-                                                                      ↘ [S3統合バケット]
+フロントエンド: [ユーザー] → [Vercel CDN] → [Next.js App]
+                                    ↓ API通信
+バックエンド:   [ユーザー] → [Route53] → [ALB] → [ECS統合タスク] → [RDS PostgreSQL]
+                                                 (Nginx+Django)  ↘ [S3統合バケット]
+静的ファイル:   [ユーザー] → [CloudFront CDN] ← [S3統合バケット]
 ```
 
 ### 主要コンポーネント
 
 - **フロントエンド**: Next.js 15 (Vercel でホスティング)
-- **バックエンド**: Django REST API (ECS Fargate - 1 タスクから開始)
+- **バックエンド**: 統合 ECS タスク (Nginx + Django + Gunicorn - 1 タスクから開始)
 - **データベース**: PostgreSQL (RDS t3.micro - Single-AZ)
-- **ストレージ**: S3 統合バケット (media/ + static/)
-- **CDN**: CloudFront (静的ファイル配信)
+- **ストレージ**: S3 統合バケット (media/ + static/(Django 静的ファイル を 1 つのバケットで管理))
+- **CDN**: CloudFront (S3 の静的ファイル配信・画像最適化) + Vercel CDN (Next.js 配信)
 - **DNS**: Route53 + ACM SSL 証明書
+- **管理**: Session Manager (Bastion 不要のセキュアアクセス)
 
 ![アーキテクチャ図](aws-architecture.md)
 
@@ -124,12 +133,12 @@ BUCKET_NAME=thisisjapan-files
 ```bash
 # Django SECRET_KEY生成
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+# オンラインツール使用(Django SECRET_KEY)
+https://djecrety.ir/
 
 # ランダム文字列生成（JWT用など）
 openssl rand -base64 32
 
-# オンラインツール使用
-# https://djecrety.ir/ (Django SECRET_KEY)
 ```
 
 ## 🚀 Phase 1: AWS 基盤構築 (1 日)
@@ -288,11 +297,11 @@ VPC: thisisjapan-vpc
    ログエクスポート: postgresql ログにチェック
    ```
 
-### 2-2. S3 バケット作成
+### 2-2. S3 統合バケット作成
 
 **AWS マネジメントコンソール > S3**
 
-1. **バケット作成**
+1. **統合バケット作成**
 
    ```
    バケット名: thisisjapan-files
@@ -307,7 +316,21 @@ VPC: thisisjapan-vpc
    バケットのバージョニング: 無効 (MVP段階)
    ```
 
-3. **バケットポリシー設定**
+3. **フォルダ構造作成**
+   バケット内で以下のフォルダを作成：
+
+   ```
+   thisisjapan-files/
+   ├── media/     # ユーザーアップロード画像
+   └── static/    # Django管理画面・REST Framework用CSS/JS
+   ```
+
+   **重要**:
+
+   - フロントエンド（Next.js）の静的ファイルは Vercel から配信されるため、この S3 には保存されない
+   - ユーザーアップロード画像（media/）は Vercel では配信できないため、S3 + CloudFront が必要
+
+4. **バケットポリシー設定**
    バケット > アクセス許可 > バケットポリシー:
 
    ```json
@@ -315,17 +338,24 @@ VPC: thisisjapan-vpc
      "Version": "2012-10-17",
      "Statement": [
        {
-         "Sid": "PublicReadGetObject",
+         "Sid": "PublicReadMediaFiles",
          "Effect": "Allow",
          "Principal": "*",
          "Action": "s3:GetObject",
          "Resource": "arn:aws:s3:::thisisjapan-files/media/*"
+       },
+       {
+         "Sid": "PublicReadStaticFiles",
+         "Effect": "Allow",
+         "Principal": "*",
+         "Action": "s3:GetObject",
+         "Resource": "arn:aws:s3:::thisisjapan-files/static/*"
        }
      ]
    }
    ```
 
-4. **CORS 設定**
+5. **CORS 設定**
    バケット > アクセス許可 > クロスオリジンリソース共有 (CORS):
    ```json
    [
@@ -373,26 +403,70 @@ VPC: thisisjapan-vpc
 イメージスキャンの設定: 無効 (MVP段階)
 ```
 
-### 3-2. Docker イメージのビルド・プッシュ
+### 3-2. 統合 Docker イメージの準備
 
-**ローカル環境で実行:**
+**Nginx + Django 統合構成の Dockerfile を作成**
 
-1. **AWS CLI 認証**
+1. **統合 Dockerfile 作成** (backend/Dockerfile)
 
-   ```bash
-   aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com
+   ```dockerfile
+   FROM python:3.11-slim
+
+   # Nginx とシステム依存関係のインストール
+   RUN apt-get update && apt-get install -y \
+       nginx \
+       gcc \
+       && rm -rf /var/lib/apt/lists/*
+
+   # Pythonパッケージインストール
+   COPY requirements.txt /app/
+   RUN pip install --no-cache-dir -r /app/requirements.txt
+
+   # アプリケーションコピー
+   COPY . /app/
+   WORKDIR /app
+
+   # Nginx設定
+   COPY nginx.conf /etc/nginx/nginx.conf
+
+   # 静的ファイル収集
+   RUN python manage.py collectstatic --noinput
+
+   # 起動スクリプト
+   COPY start.sh /start.sh
+   RUN chmod +x /start.sh
+
+   EXPOSE 80
+   CMD ["/start.sh"]
    ```
 
-2. **Docker イメージビルド**
+2. **起動スクリプト作成** (backend/start.sh)
 
    ```bash
+   #!/bin/bash
+
+   # データベースマイグレーション
+   python manage.py migrate
+
+   # Gunicorn起動
+   gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 &
+
+   # Nginx起動
+   nginx -g 'daemon off;'
+   ```
+
+3. **Docker イメージビルド・プッシュ**
+
+   ```bash
+   # AWS CLI 認証
+   aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com
+
+   # 統合イメージビルド
    cd backend
    docker build -t thisisjapan-backend .
    docker tag thisisjapan-backend:latest [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com/thisisjapan-backend:latest
-   ```
 
-3. **イメージプッシュ**
-   ```bash
+   # イメージプッシュ
    docker push [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com/thisisjapan-backend:latest
    ```
 
@@ -419,10 +493,10 @@ VPC: thisisjapan-vpc
    タスクロール: ecsTaskExecutionRole
    ```
 
-2. **コンテナ設定**
+2. **統合コンテナ設定**
 
    ```
-   コンテナ名: django-app
+   コンテナ名: nginx-django-app
    イメージURI: [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com/thisisjapan-backend:latest
    メモリ: 512 MiB
    CPU: 0.25 vCPU
@@ -431,9 +505,9 @@ VPC: thisisjapan-vpc
 3. **ポートマッピング**
 
    ```
-   コンテナポート: 8000
+   コンテナポート: 80
    プロトコル: TCP
-   ポート名: django-port
+   ポート名: nginx-port
    アプリプロトコル: HTTP
    ```
 
@@ -523,7 +597,7 @@ VPC: thisisjapan-vpc
    ターゲットタイプ: IPアドレス
    ターゲットグループ名: thisisjapan-tg
    プロトコル: HTTP
-   ポート: 8000
+   ポート: 80
    VPC: thisisjapan-vpc
    ```
 
@@ -534,6 +608,7 @@ VPC: thisisjapan-vpc
    タイムアウト: 5秒
    正常閾値: 2
    非正常閾値: 5
+   マッチャー: 200
    ```
 
 ### 4-3. ECS サービス作成
@@ -776,6 +851,84 @@ NEXTAUTH_SECRET=[JWT_SECRET]
 - [ ] ログが正常に出力されている
 - [ ] アラーム設定が有効
 
+## 📊 Phase 8: CloudFront CDN 設定 (追加設定)
+
+### 8-1. CloudFront ディストリビューション作成
+
+**AWS マネジメントコンソール > CloudFront**
+
+1. **ディストリビューション作成**
+
+   ```
+   オリジンドメイン: thisisjapan-files.s3.ap-northeast-1.amazonaws.com
+   オリジンパス: 空白
+   名前: thisisjapan-s3-origin
+   ```
+
+2. **デフォルトキャッシュビヘイビア**
+
+   ```
+   ビューワープロトコルポリシー: Redirect HTTP to HTTPS
+   許可されたHTTPメソッド: GET, HEAD
+   キャッシュキー: Legacy cache settings
+   ```
+
+3. **設定**
+
+   ```
+   価格クラス: すべてのエッジロケーションを使用 (最高のパフォーマンス)
+   代替ドメイン名 (CNAME): cdn.thisisjapan.com
+   SSL証明書: ACMの証明書を使用
+   ```
+
+### 8-2. Route53 CDN 用レコード作成
+
+```
+レコード名: cdn.thisisjapan.com
+レコードタイプ: A
+エイリアス: はい
+エイリアス先: CloudFront distribution
+```
+
+## 🖥️ Phase 9: Session Manager セットアップ (管理用)
+
+### 9-1. Systems Manager の設定
+
+**AWS マネジメントコンソール > Systems Manager**
+
+1. **Session Manager の有効化**
+
+   ```
+   Session Manager > 設定 > セッション設定
+   - ログを CloudWatch に記録: 有効
+   - ログ暗号化: 有効 (KMS)
+   ```
+
+2. **ECS Exec の有効化**
+
+   ```
+   ECS > サービス > thisisjapan-service > 更新
+   - Enable Execute Command: ✓ チェック
+   ```
+
+### 9-2. コンテナへのアクセス方法
+
+**ローカル環境から:**
+
+```bash
+# ECS Execでコンテナにアクセス
+aws ecs execute-command \
+  --cluster thisisjapan-cluster \
+  --task [タスクID] \
+  --container nginx-django-app \
+  --interactive \
+  --command "/bin/bash"
+
+# Django管理コマンド実行例
+python manage.py createsuperuser
+python manage.py collectstatic
+```
+
 ## 🛠️ トラブルシューティング
 
 ### ECS タスクが起動しない
@@ -787,9 +940,43 @@ NEXTAUTH_SECRET=[JWT_SECRET]
    ```
 
 2. **よくある原因**
+   - Nginx 設定ファイルの構文エラー
+   - 起動スクリプトの権限問題
    - Secrets Manager の権限不足
    - 環境変数の設定ミス
-   - Docker イメージの問題
+
+### 統合コンテナのトラブル
+
+1. **Nginx 設定確認**
+
+   ```nginx
+   # backend/nginx.conf (参考例)
+   events {
+       worker_connections 1024;
+   }
+
+   http {
+       upstream django {
+           server 127.0.0.1:8000;
+       }
+
+       server {
+           listen 80;
+           location / {
+               proxy_pass http://django;
+               proxy_set_header Host $host;
+               proxy_set_header X-Real-IP $remote_addr;
+           }
+
+           location /static/ {
+               alias /app/staticfiles/;
+           }
+       }
+   }
+   ```
+
+2. **起動順序の確認**
+   - Gunicorn → Nginx の順で起動されているか
 
 ### RDS 接続エラー
 
@@ -820,12 +1007,13 @@ NEXTAUTH_SECRET=[JWT_SECRET]
 
 2. **ターゲットグループ確認**
    - ヘルスチェックパス: /health/
-   - ポート: 8000
+   - ポート: 80 (Nginx)
 
 ### S3 ファイルアップロード失敗
 
-1. **IAM ロール権限確認**
+1. **統合バケット権限確認**
    - ECS タスクロールに S3 アクセス権限があるか
+   - media/ と static/ 両方のパスに書き込み権限があるか
 2. **CORS 設定確認**
    - S3 バケットの CORS 設定が正しいか
 
@@ -833,21 +1021,51 @@ NEXTAUTH_SECRET=[JWT_SECRET]
 
 ### 定期メンテナンス
 
-- **月次**: セキュリティアップデート確認
-- **週次**: ログ・メトリクス確認
-- **日次**: アプリケーション動作確認
+- **月次**: セキュリティアップデート確認・S3 統合バケット使用量確認
+- **週次**: ログ・メトリクス確認・CloudFront キャッシュ統計確認
+- **日次**: アプリケーション動作確認・統合コンテナの正常性確認
 
 ### スケーリング
 
 - **ECS Auto Scaling**: CPU 使用率 70%でスケールアウト
 - **RDS**: 必要に応じてインスタンスサイズ変更
-- **S3**: 自動スケーリング (使用量課金)
+- **S3 + CloudFront**: 自動スケーリング (使用量課金)
+- **統合コンテナ**: Nginx + Django 両方がスケールアウト
 
 ### バックアップ
 
 - **RDS**: 自動バックアップ 7 日間保持
-- **S3**: バージョニング有効化 (本番環境)
+- **S3 統合バケット**: バージョニング有効化 (本番環境)
 - **コード**: Git リポジトリ
+- **設定ファイル**: nginx.conf, start.sh のバックアップ
+
+### 初心者向け管理のコツ
+
+1. **Session Manager 活用**
+
+   - EC2 への SSH 不要、ブラウザから直接管理
+   - キーペアの管理が不要
+
+2. **統合監視**
+
+   - CloudWatch で ECS, RDS, ALB をまとめて監視
+   - 複雑な設定は後回し、基本メトリクスから開始
+
+3. **トラブル時の対応順序**
+   - CloudWatch ログを確認
+   - ECS Exec でコンテナ内を直接確認
+   - 必要に応じて ECS サービスを再起動
+
+## ✅ 最終確認チェックリスト
+
+### 統合構成の確認
+
+- [ ] ECS 統合タスク（Nginx + Django）が正常起動
+- [ ] S3 統合バケットで media/ と static/ の両方が機能
+- [ ] CloudFront CDN が S3 統合バケットから配信
+- [ ] Session Manager で ECS コンテナにアクセス可能
+
+### 従来のチェック項目
 
 - [ ] フロントエンドとバックエンドの接続テスト
 - [ ] ユーザー登録とログインフロー
