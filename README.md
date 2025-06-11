@@ -105,6 +105,7 @@
 
 ---
 
+# Column.
 - 日本人について
   - 武士道
   - 戦後日本　https://youtu.be/q28drkmUSqY?si=ulWCYxBsHZQ79AAY
