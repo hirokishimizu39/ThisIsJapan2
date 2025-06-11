@@ -10,7 +10,7 @@
 
 - **バックエンド**
 
-  - Django(Python)での [REST](https://developer.mozilla.org/ja/docs/Glossary/REST)ful **API 開発**(OpenAPI 仕様準拠)
+  - [Django(Python)でのRESTful **API 開発**](https://www.django-rest-framework.org/api-guide/requests/)(OpenAPI 仕様準拠)
   - TypeScript クライアントとシームレスに連携可能なエンドポイント設計
 
 - **DB**
