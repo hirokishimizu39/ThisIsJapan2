@@ -10,18 +10,23 @@
 
 - **バックエンド**
 
-  - [Django(Python)でのRESTful **API 開発**](https://www.django-rest-framework.org/api-guide/requests/)(OpenAPI 仕様準拠)
-  - TypeScript クライアントとシームレスに連携可能なエンドポイント設計
+  - [Django(Python)でのRESTful **API 開発**](https://www.django-rest-framework.org/api-guide/requests/)
+  - TypeScript クライアントとの統合を前提としたエンドポイント設計
 
 - **DB**
 
-  - [PostgreSQL](https://www.postgresql.org/docs/14/index.html) を ORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
+  - [PostgreSQL](https://www.postgresql.org/docs/14/index.html)(Django ORM) の10以上のテーブルを設計・運用し、マイグレーションやバリデーションを通じてセキュアで保守性のあるデータ管理を実現
+
 
 - **インフラ**
   - [Docker](https://docs.docker.jp/get-started/overview.html#) で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
-  - [AWS Fargate for ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html) を利用したコンテナデプロイにより、スケーラブルなサーバーレス運用を構築
+  - AWS([Fargate for ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html), S3, RDS, Route53, IAM)を活用し、スケーラブルかつサーバーレスなコンテナ運用基盤を構築
 - （今後実現予定...CI/CD）
   - GitHub Actions, Terraform を導入し、IaC および 自動テスト/静的解析による CI/CD を強化予定
+- 開発ツール
+  - Vim, Terminal, Warp
+  - VSCode, Cursor
+  - Git, Github(CLI, GUIどちらでも)
 
 <br>
 
