@@ -15,7 +15,7 @@
 
 - **DB**
 
-  - [PostgreSQL](https://www.postgresql.org/docs/14/index.html)(Django ORM) の10以上のテーブルを設計・運用し、マイグレーションやバリデーションを通じてセキュアで保守性のあるデータ管理を実現
+  - [PostgreSQL](https://www.postgresql.org/docs/14/index.html)(Django ORMを利用) の10以上のテーブルを設計・運用し、マイグレーションやバリデーションを通じてセキュアで保守性のあるデータ管理を実現
 
 
 - **インフラ**
