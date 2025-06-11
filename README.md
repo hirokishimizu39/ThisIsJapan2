@@ -15,7 +15,7 @@
 
 - **DB**
 
-  - PostgreSQL を ORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
+  - [PostgreSQL](https://www.postgresql.org/docs/14/index.html) を ORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
 
 - **インフラ**
   - [Docker](https://docs.docker.jp/get-started/overview.html#) で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
