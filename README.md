@@ -18,7 +18,7 @@
   - PostgreSQL を ORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
 
 - **インフラ**
-  - Docker で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
+  - [Docker](https://docs.docker.jp/get-started/overview.html#) で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
   - AWS ECS ＋ Fargate を利用したコンテナデプロイにより、スケーラブルなサーバーレス運用を構築
 - （今後実現予定...CI/CD）
   - GitHub Actions, Terraform を導入し、IaC および 自動テスト/静的解析による CI/CD を強化予定
