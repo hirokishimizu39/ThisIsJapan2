@@ -54,8 +54,8 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
    - Django REST Framework(Python3.12, Django5.2, djangorestframework3.16.0, django-cors-headers4.7.0, djangorestframework-simplejwt5.3.1)
    - API バージョニング（v1→v2...）
-   - JWT 認証([https://jpadilla.github.io/django-rest-framework-jwt/)](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/))
-   - CORS 設定(https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file)
+   - [JWT 認証](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
+   - [CORS 設定](https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file)
    - カスタム認証ミドルウェア（フェーズ2以降）
 
 3. **データベース (AWS RDS)**
@@ -77,11 +77,10 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
 ### バックエンド API (Django REST Framework)
 
-- RESTful API 設計原則に従った実装(https://learn.microsoft.com/ja-jp/azure/architecture/best-practices/api-design)
-- OpenAPI 3.0 仕様に準拠したドキュメント(https://swagger.io/docs/specification/v3_0/about/)
+- [RESTful API 設計原則に従った実装](https://learn.microsoft.com/ja-jp/azure/architecture/best-practices/api-design)
+- [OpenAPI 3.0 仕様に準拠したドキュメント](https://swagger.io/docs/specification/v3_0/about/)
 - バージョニング導入 (`/api/v1/`)
 - ビジネスロジックとデータ処理に集中
-- JWT 認証によるセキュリティ確保
 
 ### フロントエンド API (Next.js Route Handlers)
 
@@ -97,8 +96,8 @@ Next.js の Route Handlers を BFF として導入し、フロントエンドと
 
 1. **JWT ベースの認証**
 
-   - アクセストークン (有効期限: 1 時間)
-   - リフレッシュトークン (有効期限: 7 日)
+   - アクセストークン (有効期限: 1 時間（仮）)
+   - リフレッシュトークン (有効期限: 7 日（仮）)
    - HTTPS による通信暗号化
 
 2. **権限管理**

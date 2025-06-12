@@ -4,24 +4,29 @@
 
 - **フロントエンド**
 
-  - **React**での宣言型プログラミングによるコンポーネント指向 UI の実装
-  - React+**TypeScript**による型安全かつ再利用性の高い UI の実現
-  - **Next.js**での CSR,SSR,SSG の使い分けによるパフォーマンス最適化と SEO 強化
+  - [**React**](https://react.dev/reference/react)での宣言型プログラミングによるコンポーネント指向 UI の実装
+  - React+[**TypeScript**](https://www.typescriptlang.org/docs/)による型安全かつ再利用性の高い UI の実現
+  - [**Next.js**(app router)](https://nextjs.org/docs/app/getting-started)での CSR,SSR,SSG の使い分けによるパフォーマンス最適化と SEO 強化
 
 - **バックエンド**
 
-  - Django(Python)での RESTful **API 開発**(OpenAPI 仕様準拠)
-  - TypeScript クライアントとシームレスに連携可能なエンドポイント設計
+  - [Django(Python)でのRESTful **API 開発**](https://www.django-rest-framework.org/)
+  - TypeScript クライアントとの統合を前提としたエンドポイント設計
 
 - **DB**
 
-  - PostgreSQL を ORM(Django ORM)で設計・運用し、効率的かつ安全なデータ管理を実現
+  - [PostgreSQL](https://www.postgresql.org/docs/)(Django ORMを利用) の10以上のテーブルを設計・運用し、マイグレーションやバリデーションを通じてセキュアで保守性のあるデータ管理を実現
+
 
 - **インフラ**
-  - Docker で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
-  - AWS ECS ＋ Fargate を利用したコンテナデプロイにより、スケーラブルなサーバーレス運用を構築
+  - [Docker](https://docs.docker.jp/get-started/overview.html#) で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
+  - AWS([Fargate for ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html), S3, RDS, Route53, IAM)を活用し、スケーラブルかつサーバーレスなコンテナ運用基盤を構築
 - （今後実現予定...CI/CD）
   - GitHub Actions, Terraform を導入し、IaC および 自動テスト/静的解析による CI/CD を強化予定
+- 開発ツール
+  - Vim, Terminal, Warp
+  - VSCode, Cursor
+  - Git, Github(CLI, GUIどちらでも)
 
 <br>
 
@@ -105,6 +110,7 @@
 
 ---
 
+# Column.
 - 日本人について
   - 武士道
   - 戦後日本　https://youtu.be/q28drkmUSqY?si=ulWCYxBsHZQ79AAY

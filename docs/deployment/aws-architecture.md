@@ -1,3 +1,4 @@
+# できるだけ最小構成で実現
 ```mermaid
 graph TD
     %% ユーザー
@@ -115,4 +116,3 @@ graph TD
     class ECSTask compute
     class SessionManager,CloudWatch management
     class CloudFront cdn
-```
