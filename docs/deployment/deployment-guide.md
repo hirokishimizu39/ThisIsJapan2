@@ -305,7 +305,6 @@ ECS-SG アウトバウンドを以下に変更:
 - AWS WAF で ALB を保護
 - 地理的制限・レート制限の実装
 
-
 ### 1-3. VPC エンドポイント作成 (S3 用)
 
 **AWS マネジメントコンソール > VPC > エンドポイント**
@@ -324,12 +323,21 @@ VPC: thisisjapan-vpc
 
 **AWS マネジメントコンソール > RDS**
 
+**事前確認: ローカル環境の PostgreSQL バージョン**
+
+```bash
+docker compose exec db psql -U postgres -c "SELECT version();"
+
+# 実行結果:
+# PostgreSQL 14.17 (Debian 14.17-1.pgdg120+1) on aarch64-unknown-linux-gnu
+```
+
 1. **データベース作成**
 
    ```
    作成方法: 標準作成
    エンジン: PostgreSQL
-   バージョン: 14.13 (最新)
+   バージョン: 14.17 (ローカル環境と一致)
    テンプレート: 無料利用枠
 
    DBインスタンス識別子: thisisjapan-db
