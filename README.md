@@ -22,7 +22,8 @@
   - [Docker](https://docs.docker.jp/get-started/overview.html#) で開発環境から本番環境までをコンテナ化し、一貫性のあるビルド・デプロイを実現
   - AWS([Fargate for ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html), S3, RDS, Route53, IAM)を活用し、スケーラブルかつサーバーレスなコンテナ運用基盤を構築
 - （今後実現予定...CI/CD）
-  - GitHub Actions, Terraform を導入し、IaC および 自動テスト/静的解析による CI/CD を強化予定
+  - [DaC(Diagram as a Code)](https://github.com/awslabs/diagram-as-code/tree/main)でAWS構成図を作成
+  - [GitHub Actions](https://docs.github.com/en/actions), [Terraform](https://developer.hashicorp.com/terraform/docs) を導入し、IaC および 自動テスト/静的解析による CI/CD を強化予定
 - 開発ツール
   - Vim, Terminal, Warp
   - VSCode, Cursor
